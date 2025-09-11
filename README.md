@@ -44,7 +44,7 @@ npm run build
 The resulting file is placed at `web-ext-artifacts/ipp-addon-activator.xpi`.
 
 ## Configure breakage domains (BREAKAGES)
-Domains and messages live in `src/bg.js` under the `BREAKAGES` constant. Each entry looks like:
+Domains and messages live in `src/breakages.js` under the `BREAKAGES` constant. Each entry looks like:
 
 ```js
 {

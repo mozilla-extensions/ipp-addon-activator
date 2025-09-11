@@ -11,7 +11,7 @@
     }
   },
   "background": {
-    "scripts": ["bg.js"]
+    "scripts": ["breakages.js", "bg.js"]
   },
   "experiment_apis": {
     "ippActivator": {

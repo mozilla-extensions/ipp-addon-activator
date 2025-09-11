@@ -3,12 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // List of known breakages. Keep messages concise and actionable.
+
+// eslint-disable-next-line no-unused-vars
 const BREAKAGES = [
   {
     id: 'youtube',
-    domains: ['youtube.com'],
+    domains: ['youtube.com', 'www.youtube.com'],
     message:
       'Firefox VPN could break YouTube video playback. Click here to disable Firefox VPN for this domain.',
   },
 ];
-

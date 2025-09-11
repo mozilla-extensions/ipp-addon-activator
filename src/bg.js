@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// BREAKAGES is loaded via background.scripts (see manifest.json)
+/* global BREAKAGES */
 
 class IPPAddonActivator {
   #ignoredBreakages;
@@ -12,7 +12,12 @@ class IPPAddonActivator {
 
     this.tabUpdated = this.#tabUpdated.bind(this);
 
-    browser.ippActivator.isIPPActive().then(() => this.#init());
+    browser.ippActivator.isIPPActive().then((enabled) => {
+      if (enabled) {
+        this.#init();
+      }
+    });
+
     browser.ippActivator.onIPPActivated.addListener((enabled) => {
       if (enabled) {
         this.#init();
@@ -25,7 +30,8 @@ class IPPAddonActivator {
   async #init() {
     await this.#loadIgnored();
 
-    browser.tabs.onUpdated.addListener(this.tabUpdated, { properties: ['url'] });
+    // React on URL changes and reloads (status: 'loading')
+    browser.tabs.onUpdated.addListener(this.tabUpdated, { properties: ['url', 'status'] });
   }
 
   async #uninit() {
@@ -33,6 +39,8 @@ class IPPAddonActivator {
   }
 
   async #tabUpdated(tabId, changeInfo, tab) {
+    // Only act when the URL changes or a reload starts
+    if (!('url' in changeInfo) && changeInfo.status !== 'loading') return;
     const domain = this.#retrieveDomainFromTab(tab);
     if (domain === '') return;
 

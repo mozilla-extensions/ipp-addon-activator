@@ -14,6 +14,14 @@ this.ippActivator = class extends ExtensionAPI {
   onShutdown(isAppShutdown) {}
 
   getAPI(context) {
+    function isTestMode() {
+      try {
+        return Services.prefs.getBoolPref('extensions.ippactivator.testMode', false);
+      } catch (_) {
+        return false;
+      }
+    }
+
     return {
       ippActivator: {
         onIPPActivated: new lazy.ExtensionCommon.EventManager({
@@ -29,13 +37,17 @@ this.ippActivator = class extends ExtensionAPI {
               },
             };
             Services.obs.addObserver(observer, topic);
+            // In test mode, simulate IPP activation immediately.
+            if (isTestMode()) {
+              fire.async({});
+            }
             return () => {
               Services.obs.removeObserver(observer, topic);
             };
           },
         }).api(),
         isIPPActive() {
-          return !!lazy.IPProtectionService.connection;
+          return isTestMode() || lazy.IPProtectionService.isActive;
         },
         async showMessage(message) {
           return new Promise((resolve) => {

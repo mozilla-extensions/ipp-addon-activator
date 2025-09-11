@@ -19,7 +19,7 @@ describe('IPP Add-on Activator (E2E)', function () {
   this.timeout(120_000);
 
   let driver;
-  const testUrl = 'https://www.youtube.com/';
+  const testUrl = 'https://www.example.com/';
 
   before(async () => {
     const xpiPath = await buildXpiIfMissing();
@@ -32,6 +32,7 @@ describe('IPP Add-on Activator (E2E)', function () {
   });
 
   it("clicking 'OK' reloads the page", async () => {
+    await setContentContext(driver);
     await driver.get(testUrl);
     await waitForNotification(driver);
 
@@ -44,6 +45,7 @@ describe('IPP Add-on Activator (E2E)', function () {
   });
 
   it('dismiss and reappears on refresh', async () => {
+    await setContentContext(driver);
     await driver.get(testUrl);
     await waitForNotification(driver);
 

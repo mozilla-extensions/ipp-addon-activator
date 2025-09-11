@@ -14,7 +14,7 @@ Note: the dev command already sets the needed prefs at runtime.
 
 1. Clone the repository
 2. Install dependencies:
-   - `npm ci` (recommended in CI) or `npm install`
+   - `npm install`
 
 ## Scripts
 

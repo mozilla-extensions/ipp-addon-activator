@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* global BREAKAGES */
+/* global BREAKAGES, TESTING_BREAKAGES */
 
 class IPPAddonActivator {
   #ignoredBreakages;
@@ -12,18 +12,26 @@ class IPPAddonActivator {
 
     this.tabUpdated = this.#tabUpdated.bind(this);
 
-    browser.ippActivator.isIPPActive().then((enabled) => {
-      if (enabled) {
+    browser.ippActivator.isTesting().then((testing) => {
+      if (testing) {
+        TESTING_BREAKAGES.forEach((b) => BREAKAGES.push(b));
         this.#init();
+        return;
       }
-    });
 
-    browser.ippActivator.onIPPActivated.addListener((enabled) => {
-      if (enabled) {
-        this.#init();
-      } else {
-        this.#uninit();
-      }
+      browser.ippActivator.isIPPActive().then((enabled) => {
+        if (enabled) {
+          this.#init();
+        }
+      });
+
+      browser.ippActivator.onIPPActivated.addListener((enabled) => {
+        if (enabled) {
+          this.#init();
+        } else {
+          this.#uninit();
+        }
+      });
     });
   }
 

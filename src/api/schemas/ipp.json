@@ -18,6 +18,14 @@
         ]
       },
       {
+        "name": "isTesting",
+        "type": "function",
+        "description": "Return whether we are running in testing mode.",
+        "async": true,
+        "returns": { "type": "boolean" },
+        "parameters": []
+      },
+      {
         "name": "isIPPActive",
         "type": "function",
         "description": "Return whether IPP connection is active.",

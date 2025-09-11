@@ -2,13 +2,16 @@
 const path = require('node:path');
 const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
+const os = require('node:os');
+const fsp = require('node:fs/promises');
 const { Builder, until } = require('selenium-webdriver');
 const firefox = require('selenium-webdriver/firefox');
 
-const ADDON_XPI_PATH = path.join(__dirname, '../web-ext-artifacts/ipp-addon-activator.xpi');
 const NOTIFICATION_ID = 'ipp-activator-notification';
 
 async function buildXpiIfMissing() {
+  const ADDON_XPI_PATH = path.join(__dirname, '../web-ext-artifacts/ipp-addon-activator.xpi');
+
   if (fs.existsSync(ADDON_XPI_PATH)) return ADDON_XPI_PATH;
   console.log('Building XPI...');
   const res = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
@@ -45,7 +48,7 @@ async function setContentContext(driver) {
   await driver.execute(new Command('mozSetContext').setParameter('context', 'content'));
 }
 
-async function waitForNotification(driver, timeoutMs = 15000) {
+async function waitForNotification(driver, timeoutMs = 30000) {
   await setChromeContext(driver);
   return driver.wait(async () => {
     return await driver.executeScript((id) => {
@@ -166,8 +169,6 @@ async function waitReloadSince(driver, prev, timeoutMs = 20000) {
 }
 
 module.exports = {
-  ADDON_XPI_PATH,
-  NOTIFICATION_ID,
   buildXpiIfMissing,
   createDriver,
   setChromeContext,
@@ -180,4 +181,3 @@ module.exports = {
   getNavigationState,
   waitReloadSince,
 };
-

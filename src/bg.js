@@ -5,7 +5,7 @@
 const BREAKAGES = [
   {
     id: 'youtube',
-    domains: ['youtube.com', 'example.com'],
+    domains: ['youtube.com'],
     message:
       'Firefox VPN could break the YouTube video playing. Click here to disable Firefox VPN for this domain.',
   },

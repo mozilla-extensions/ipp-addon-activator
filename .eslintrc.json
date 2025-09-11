@@ -1,0 +1,21 @@
+{
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "globals": {
+    "browser": "readonly",
+    "ChromeUtils": "readonly",
+    "ExtensionAPI": "readonly",
+    "Services": "readonly"
+  },
+  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "script"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "args": "none", "ignoreRestSiblings": true }],
+    "no-console": "off"
+  }
+}

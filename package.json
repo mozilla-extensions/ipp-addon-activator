@@ -1,0 +1,25 @@
+{
+  "name": "ipp-addon-activator",
+  "version": "0.0.1",
+  "description": "A system add-on to activate IPP in 143",
+  "main": "index.js",
+  "scripts": {
+    "build": "web-ext build --source-dir src --filename ipp-addon-activator.xpi",
+    "start": "web-ext run --source-dir src --verbose --pref devtools.console.stdout.chrome=true --pref devtools.console.stdout.content=true --pref extensions.experiments.enabled=true",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write ."
+  },
+  "author": "Andrea Marchesini",
+  "license": "MPL-2.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.2.5",
+    "web-ext": "^8.9.0"
+  }
+}

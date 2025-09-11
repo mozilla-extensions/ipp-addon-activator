@@ -1,0 +1,65 @@
+[
+  {
+    "namespace": "ippActivator",
+    "description": "IPP Activator API",
+    "functions": [
+      {
+        "name": "showMessage",
+        "type": "function",
+        "description": "Show a message using the browser notification box.",
+        "async": true,
+        "returns": { "type": "string" },
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string",
+            "description": "The message to display."
+          }
+        ]
+      },
+      {
+        "name": "isIPPActive",
+        "type": "function",
+        "description": "Return whether IPP connection is active.",
+        "async": true,
+        "returns": { "type": "boolean" },
+        "parameters": []
+      },
+      {
+        "name": "allowURL",
+        "type": "function",
+        "description": "Add a specific URL to the list of site exclusion.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL to allow."
+          }
+        ],
+        "returns": { "type": "boolean" }
+      }
+    ],
+    "events": [
+      {
+        "name": "onIPPActivated",
+        "type": "function",
+        "description": "Fired when IPProtectionService dispatches 'IPProtectionService:Started'.",
+        "parameters": [
+          {
+            "name": "listener",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "optional": true,
+                "properties": {}
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

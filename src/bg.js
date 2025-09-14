@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import * as breakages from './breakages.js';
-
 class IPPAddonActivator {
   #ignoredBreakages;
   #breakages;
@@ -13,11 +11,10 @@ class IPPAddonActivator {
 
     this.tabUpdated = this.#tabUpdated.bind(this);
 
-    browser.ippActivator.isTesting().then((testing) => {
-      this.#breakages = breakages.BREAKAGES;
+    browser.ippActivator.isTesting().then(async (isTesting) => {
+      await this.#loadBreakages(isTesting);
 
-      if (testing) {
-        breakages.TESTING_BREAKAGES.forEach((b) => this.#breakages.push(b));
+      if (isTesting) {
         this.#init();
         return;
       }
@@ -47,6 +44,28 @@ class IPPAddonActivator {
 
   async #uninit() {
     browser.tabs.onUpdated.removeListener(this.tabUpdated);
+  }
+
+  async #loadBreakages(isTesting) {
+    try {
+      const url = browser.runtime.getURL('breakages/base.json');
+      const res = await fetch(url);
+      const base = await res.json();
+      this.#breakages = Array.isArray(base) ? base : [];
+    } catch (e) {
+      this.#breakages = [];
+    }
+
+    if (isTesting) {
+      try {
+        const turl = browser.runtime.getURL('breakages/testing.json');
+        const tres = await fetch(turl);
+        const tbreaks = await tres.json();
+        if (Array.isArray(tbreaks)) this.#breakages.push(...tbreaks);
+      } catch (e) {
+        console.log('Unable to retrieve testing breakages', e);
+      }
+    }
   }
 
   async #tabUpdated(tabId, changeInfo, tab) {

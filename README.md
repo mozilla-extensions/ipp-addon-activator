@@ -64,23 +64,29 @@ Optionally set the Firefox binary path:
 FIREFOX_BINARY="/path/to/firefox-nightly" npm run test
 ```
 
-## Configure breakage domains (BREAKAGES)
+## Configure breakage domains
 
-Domains and messages live in `src/breakages.js` under the `BREAKAGES` constant. Each entry looks like:
+Breakage definitions are JSON files under `src/breakages/`:
 
-```js
+- `src/breakages/base.json`: entries used in normal operation.
+- `src/breakages/testing.json`: extra entries loaded only when testing mode is enabled.
+
+Each entry has the shape:
+
+```json
 {
-  id: 'youtube',
-  domains: ['youtube.com', 'example.com'],
-  message: 'Notification text to show to the user',
+  "id": "youtube",
+  "domains": ["youtube.com", "www.youtube.com"],
+  "message": "Notification text to show to the user"
 }
 ```
 
-Guidelines:
+Notes:
 
 - `id`: unique identifier for the breakage kind (used to remember “Don’t show again”).
 - `domains`: list of hosts for which to show the notification.
 - `message`: text displayed in the browser notification bar.
+- Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`). In testing mode, entries from `testing.json` are appended to those in `base.json`.
 
 To reset “Don’t show again” choices, clear the add-on’s local storage or reinstall the extension.
 

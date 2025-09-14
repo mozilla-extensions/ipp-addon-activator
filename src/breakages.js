@@ -2,8 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// eslint-disable-next-line no-unused-vars
-const BREAKAGES = [
+export const BREAKAGES = [
   {
     id: 'youtube',
     domains: ['youtube.com', 'www.youtube.com'],
@@ -12,8 +11,7 @@ const BREAKAGES = [
   },
 ];
 
-// eslint-disable-next-line no-unused-vars
-const TESTING_BREAKAGES = [
+export const TESTING_BREAKAGES = [
   {
     id: 'example',
     domains: ['example.com', 'www.example.com'],

@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* global BREAKAGES, TESTING_BREAKAGES */
+import * as breakages from './breakages.js';
 
 class IPPAddonActivator {
   #ignoredBreakages;
+  #breakages;
 
   constructor() {
     this.#ignoredBreakages = new Set();
@@ -13,8 +14,10 @@ class IPPAddonActivator {
     this.tabUpdated = this.#tabUpdated.bind(this);
 
     browser.ippActivator.isTesting().then((testing) => {
+      this.#breakages = breakages.BREAKAGES;
+
       if (testing) {
-        TESTING_BREAKAGES.forEach((b) => BREAKAGES.push(b));
+        breakages.TESTING_BREAKAGES.forEach((b) => this.#breakages.push(b));
         this.#init();
         return;
       }
@@ -52,7 +55,7 @@ class IPPAddonActivator {
     const domain = this.#retrieveDomainFromTab(tab);
     if (domain === '') return;
 
-    const breakage = BREAKAGES.find((breakage) => breakage.domains.includes(domain));
+    const breakage = this.#breakages.find((breakage) => breakage.domains.includes(domain));
     if (!breakage) return;
 
     if (this.#ignoredBreakages.has(breakage.id)) return;

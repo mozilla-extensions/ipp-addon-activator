@@ -79,29 +79,33 @@ async function notificationExists(driver) {
 
 async function clickNotificationButton(driver, labelText) {
   await setChromeContext(driver);
-  return driver.executeScript((id, text) => {
-    try {
-      // eslint-disable-next-line no-undef
-      const nb = window.gBrowser.getNotificationBox();
-      const n = nb.getNotificationWithValue?.(id);
-      if (!n) return false;
-      const buttons = Array.from(n.querySelectorAll('button'));
-      const matches = (v) => (v || '').trim() === text;
-      const btn = buttons.find((b) => {
-        const tc = (b.textContent || '').trim();
-        if (matches(tc)) return true;
-        const labels = Array.from(b.querySelectorAll('label'))
-          .map((l) => (l.value || l.textContent || '').trim())
-          .filter(Boolean);
-        return labels.some(matches);
-      });
-      if (!btn) return false;
-      btn.click();
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }, NOTIFICATION_ID, labelText);
+  return driver.executeScript(
+    (id, text) => {
+      try {
+        // eslint-disable-next-line no-undef
+        const nb = window.gBrowser.getNotificationBox();
+        const n = nb.getNotificationWithValue?.(id);
+        if (!n) return false;
+        const buttons = Array.from(n.querySelectorAll('button'));
+        const matches = (v) => (v || '').trim() === text;
+        const btn = buttons.find((b) => {
+          const tc = (b.textContent || '').trim();
+          if (matches(tc)) return true;
+          const labels = Array.from(b.querySelectorAll('label'))
+            .map((l) => (l.value || l.textContent || '').trim())
+            .filter(Boolean);
+          return labels.some(matches);
+        });
+        if (!btn) return false;
+        btn.click();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+    NOTIFICATION_ID,
+    labelText,
+  );
 }
 
 async function dismissNotification(driver) {

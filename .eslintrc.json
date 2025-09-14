@@ -12,7 +12,7 @@
   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
   "parserOptions": {
     "ecmaVersion": 2022,
-    "sourceType": "script"
+    "sourceType": "module"
   },
   "rules": {
     "no-unused-vars": ["warn", { "args": "none", "ignoreRestSiblings": true }],

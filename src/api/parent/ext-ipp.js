@@ -93,7 +93,7 @@ this.ippActivator = class extends ExtensionAPI {
                 id,
                 {
                   label: message || '',
-                  priority: nbox.PRIORITY_INFO_HIGH,
+                  priority: nbox.PRIORITY_WARNING_HIGH,
                   eventCallback: (event) => {
                     if (event === 'dismissed') {
                       done('closed');

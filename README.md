@@ -74,7 +74,6 @@ Each entry has the shape:
 
 ```json
 {
-  "id": "youtube",
   "domains": ["youtube.com", "www.youtube.com"],
   "message": "Notification text to show to the user"
 }
@@ -82,7 +81,6 @@ Each entry has the shape:
 
 Notes:
 
-- `id`: unique identifier for the breakage kind.
 - `domains`: list of hosts for which to show the notification.
 - `message`: text displayed in the browser notification bar.
 - Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`). In testing mode, entries from `testing.json` are appended to those in `base.json`.
@@ -94,7 +92,6 @@ Example (from tests, via Selenium running in chrome context):
 // helpers exposes setDynamicBreakages(driver, entries)
 await setDynamicBreakages(driver, [
   {
-    id: "my-test",
     domains: ["www.example.com"],
     message: "Test message",
     condition: { "type": "test", "ret": true }

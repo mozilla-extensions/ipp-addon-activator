@@ -102,10 +102,82 @@ await setDynamicBreakages(driver, [
 ]);
 ```
 
-Conditions
+## Conditions
 
-- Conditions live under `src/conditions/` and can be referenced in a breakage via the `condition` field.
-- Supported types: `and`, `or`, `test` (for simple boolean returns). The factory may be extended with new types.
+- Location: implementations live under `src/conditions/` and are referenced by breakages via the `condition` field.
+- Shape: a condition is an object with a `type` plus type-specific fields. Conditions can be composed with logical operators.
+
+Supported types
+
+- **and**: logical AND over an array of sub-conditions.
+  - Fields: `conditions: [Condition, ...]`
+  - Result: true only if all sub-conditions return true. Empty array → true.
+  - Example:
+    ```json
+    { "type": "and", "conditions": [{ "type": "test", "ret": true }] }
+    ```
+
+- **or**: logical OR over an array of sub-conditions.
+  - Fields: `conditions: [Condition, ...]`
+  - Result: true if any sub-condition returns true. Empty array → false.
+  - Example:
+    ```json
+    {
+      "type": "or",
+      "conditions": [
+        { "type": "test", "ret": false },
+        { "type": "test", "ret": true }
+      ]
+    }
+    ```
+
+- **test**: helper for simple boolean checks in examples/tests.
+  - Fields: `ret: boolean`
+  - Result: returns `ret` as-is.
+  - Example:
+    ```json
+    { "type": "test", "ret": true }
+    ```
+
+- **cookie**: checks for the existence (and optional value) of a cookie for a given domain.
+  - Fields:
+    - `domain` (string, required): domain to query (e.g. `"example.com"`).
+    - `name` (string, required): cookie name to match.
+    - `value` (string, optional): requires exact value match.
+    - `value_contain` (string, optional): requires cookie value to contain this substring.
+  - Result: true if a cookie with `name` exists for `domain` and, if provided, both `value` and `value_contain` conditions are satisfied.
+  - Notes:
+    - Requires the `"cookies"` permission (already included in this add-on’s manifest).
+    - `domain` should be a host like `example.com` (no scheme/path). Matching follows the browser’s cookie domain rules.
+  - Examples:
+    ```json
+    { "type": "cookie", "domain": "example.com", "name": "sessionid" }
+    ```
+    ```json
+    { "type": "cookie", "domain": "example.com", "name": "sessionid", "value": "abc123" }
+    ```
+    ```json
+    { "type": "cookie", "domain": "example.com", "name": "sessionid", "value_contain": "abc" }
+    ```
+
+Composing conditions
+
+- You can nest `and`/`or` with other conditions to express complex logic, e.g.:
+  ```json
+  {
+    "type": "and",
+    "conditions": [
+      { "type": "cookie", "domain": "example.com", "name": "session" },
+      {
+        "type": "or",
+        "conditions": [
+          { "type": "cookie", "domain": "example.com", "name": "flags", "value_contain": "beta" },
+          { "type": "test", "ret": true }
+        ]
+      }
+    ]
+  }
+  ```
 
 To reset “Don’t show again” choices, clear the add-on’s local storage or reinstall the extension.
 

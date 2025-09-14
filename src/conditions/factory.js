@@ -5,11 +5,13 @@
 import ConditionAnd from './and.js';
 import ConditionOr from './or.js';
 import ConditionTest from './test.js';
+import ConditionCookie from './cookie.js';
 
 const CONDITIONS_MAP = {
   and: ConditionAnd,
   test: ConditionTest,
   or: ConditionOr,
+  cookie: ConditionCookie,
 };
 
 export class ConditionFactory {

@@ -7,6 +7,7 @@ import { ConditionFactory } from './conditions/factory.js';
 class IPPAddonActivator {
   #ignoredBreakages;
   #breakages;
+  #baseBreakages;
 
   constructor() {
     this.#ignoredBreakages = new Set();
@@ -14,13 +15,17 @@ class IPPAddonActivator {
     this.tabUpdated = this.#tabUpdated.bind(this);
 
     browser.ippActivator.isTesting().then(async (isTesting) => {
-      await this.#loadBreakages(isTesting);
+      await this.#loadAndRebuildBreakages();
+      browser.ippActivator.onDynamicBreakagesUpdated.addListener(() =>
+        this.#loadAndRebuildBreakages(),
+      );
 
       if (isTesting) {
         this.#init();
         return;
       }
 
+      // Initialize only when IPP is active, keep in sync with activation.
       browser.ippActivator.isIPPActive().then((enabled) => {
         if (enabled) {
           this.#init();
@@ -48,26 +53,27 @@ class IPPAddonActivator {
     browser.tabs.onUpdated.removeListener(this.tabUpdated);
   }
 
-  async #loadBreakages(isTesting) {
-    try {
-      const url = browser.runtime.getURL('breakages/base.json');
-      const res = await fetch(url);
-      const base = await res.json();
-      this.#breakages = Array.isArray(base) ? base : [];
-    } catch (e) {
-      this.#breakages = [];
-    }
-
-    if (isTesting) {
+  async #loadAndRebuildBreakages() {
+    if (!this.#baseBreakages) {
       try {
-        const turl = browser.runtime.getURL('breakages/testing.json');
-        const tres = await fetch(turl);
-        const tbreaks = await tres.json();
-        if (Array.isArray(tbreaks)) this.#breakages.push(...tbreaks);
+        const url = browser.runtime.getURL('breakages/base.json');
+        const res = await fetch(url);
+        const base = await res.json();
+        this.#baseBreakages = Array.isArray(base) ? base : [];
       } catch (e) {
-        console.log('Unable to retrieve testing breakages', e);
+        this.#baseBreakages = [];
       }
     }
+
+    let dynamicBreakages = [];
+    try {
+      const dyn = await browser.ippActivator.getDynamicBreakages();
+      dynamicBreakages = Array.isArray(dyn) ? dyn : [];
+    } catch (_) {
+      console.log('Unable to retrieve the dynamic breakages');
+    }
+
+    this.#breakages = [...this.#baseBreakages, ...dynamicBreakages];
   }
 
   async #tabUpdated(tabId, changeInfo, tab) {

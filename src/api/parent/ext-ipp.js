@@ -8,6 +8,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ExtensionCommon: 'resource://gre/modules/ExtensionCommon.sys.mjs',
 });
 
+const PREF_DYNAMIC_BREAKAGES = 'extensions.ippactivator.dynamicBreakages';
+
 this.ippActivator = class extends ExtensionAPI {
   onStartup() {}
 
@@ -39,6 +41,16 @@ this.ippActivator = class extends ExtensionAPI {
         },
         isIPPActive() {
           return lazy.IPProtectionService.isActive;
+        },
+        async getDynamicBreakages() {
+          try {
+            const json = Services.prefs.getStringPref(PREF_DYNAMIC_BREAKAGES, '[]');
+            const arr = JSON.parse(json);
+            if (!Array.isArray(arr)) return [];
+            return arr;
+          } catch (_) {
+            return [];
+          }
         },
         async showMessage(message) {
           return new Promise((resolve) => {
@@ -112,6 +124,22 @@ this.ippActivator = class extends ExtensionAPI {
           if (!lazy.IPProtectionService.connection) return;
           lazy.IPProtectionService.connection.addPageExclusion(url);
         },
+        onDynamicBreakagesUpdated: new lazy.ExtensionCommon.EventManager({
+          context,
+          name: 'ippActivator.onDynamicBreakagesUpdated',
+          register: (fire) => {
+            const branch = Services.prefs.getBranch('extensions.ippactivator.');
+            const observer = {
+              observe(subject, topic, data) {
+                if (topic === 'nsPref:changed' && data === 'dynamicBreakages') {
+                  fire.async({});
+                }
+              },
+            };
+            branch.addObserver('', observer);
+            return () => branch.removeObserver('', observer);
+          },
+        }).api(),
       },
     };
   }

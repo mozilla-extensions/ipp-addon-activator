@@ -10,13 +10,11 @@ const CONDITIONS_MAP = {
   and: ConditionAnd,
   test: ConditionTest,
   or: ConditionOr,
-  /*
-  cookie: ConditionCookie,
-*/
 };
 
 export class ConditionFactory {
   #url;
+  #storage = {};
 
   static async run(url, conditionDesc) {
     if (conditionDesc === undefined) {
@@ -40,5 +38,13 @@ export class ConditionFactory {
     const conditionClass = CONDITIONS_MAP[conditionDesc.type];
     if (!conditionClass) throw new Error('No condition type', conditionDesc.type);
     return new conditionClass(this, conditionDesc);
+  }
+
+  storeData(key, value) {
+    this.#storage[key] = value;
+  }
+
+  retrieveData(key) {
+    return this.#storage[key];
   }
 }

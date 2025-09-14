@@ -34,6 +34,14 @@
         "parameters": []
       },
       {
+        "name": "getDynamicBreakages",
+        "type": "function",
+        "description": "Return dynamic breakages configured via preference.",
+        "async": true,
+        "returns": { "type": "array", "items": { "type": "object" } },
+        "parameters": []
+      },
+      {
         "name": "allowURL",
         "type": "function",
         "description": "Add a specific URL to the list of site exclusion.",
@@ -53,6 +61,25 @@
         "name": "onIPPActivated",
         "type": "function",
         "description": "Fired when IPProtectionService dispatches 'IPProtectionService:Started'.",
+        "parameters": [
+          {
+            "name": "listener",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "optional": true,
+                "properties": {}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "onDynamicBreakagesUpdated",
+        "type": "function",
+        "description": "Fired when dynamic breakages preference changes.",
         "parameters": [
           {
             "name": "listener",

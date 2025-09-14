@@ -10,6 +10,7 @@ const { Builder } = require('selenium-webdriver');
 const firefox = require('selenium-webdriver/firefox');
 
 const NOTIFICATION_ID = 'ipp-activator-notification';
+const DYNAMIC_BREAKAGES_PREF = 'extensions.ippactivator.dynamicBreakages';
 
 async function buildXpiIfMissing() {
   const ADDON_XPI_PATH = path.join(__dirname, '../web-ext-artifacts/ipp-addon-activator.xpi');
@@ -174,6 +175,40 @@ async function waitReloadSince(driver, prev, timeoutMs = 20000) {
   }, timeoutMs);
 }
 
+async function setDynamicBreakages(driver, breakages) {
+  await setChromeContext(driver);
+  return driver.executeScript(
+    (prefName, arr) => {
+      try {
+        const json = JSON.stringify(arr || []);
+        // eslint-disable-next-line no-undef
+        Services.prefs.setStringPref(prefName, json);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+    DYNAMIC_BREAKAGES_PREF,
+    breakages,
+  );
+}
+
+async function clearDynamicBreakages(driver) {
+  await setChromeContext(driver);
+  return driver.executeScript((prefName) => {
+    try {
+      // eslint-disable-next-line no-undef
+      if (Services.prefs.prefHasUserValue(prefName)) {
+        // eslint-disable-next-line no-undef
+        Services.prefs.clearUserPref(prefName);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }, DYNAMIC_BREAKAGES_PREF);
+}
+
 module.exports = {
   buildXpiIfMissing,
   createDriver,
@@ -186,4 +221,6 @@ module.exports = {
   waitNotificationGone,
   getNavigationState,
   waitReloadSince,
+  setDynamicBreakages,
+  clearDynamicBreakages,
 };

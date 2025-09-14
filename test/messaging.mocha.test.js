@@ -14,6 +14,8 @@ const {
   waitNotificationGone,
   getNavigationState,
   waitReloadSince,
+  setDynamicBreakages,
+  clearDynamicBreakages,
 } = require('./helpers');
 
 describe('IPP Add-on Activator', function () {
@@ -26,9 +28,26 @@ describe('IPP Add-on Activator', function () {
     const xpiPath = await buildXpiIfMissing();
     driver = await createDriver();
     await driver.installAddon(xpiPath, true);
+    // Inject dynamic breakage at runtime for example.com
+    await setDynamicBreakages(driver, [
+      {
+        id: 'example',
+        domains: ['example.com', 'www.example.com'],
+        message:
+          'Firefox VPN could break Example video playback. Click here to disable Firefox VPN for this domain.',
+        condition: { type: 'test', ret: true },
+      },
+    ]);
   });
 
   after(async () => {
+    if (driver) {
+      try {
+        await clearDynamicBreakages(driver);
+      } catch (_) {
+        /* ignore */
+      }
+    }
     if (driver) await driver.quit();
   });
 

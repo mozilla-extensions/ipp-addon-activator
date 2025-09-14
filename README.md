@@ -69,7 +69,6 @@ FIREFOX_BINARY="/path/to/firefox-nightly" npm run test
 Breakage definitions are JSON files under `src/breakages/`:
 
 - `src/breakages/base.json`: entries used in normal operation.
-- `src/breakages/testing.json`: extra entries loaded only when testing mode is enabled.
 
 Each entry has the shape:
 
@@ -87,6 +86,26 @@ Notes:
 - `domains`: list of hosts for which to show the notification.
 - `message`: text displayed in the browser notification bar.
 - Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`). In testing mode, entries from `testing.json` are appended to those in `base.json`.
+- Inject dynamic breakages at runtime by setting the string pref `extensions.ippactivator.dynamicBreakages` to a JSON array of entries. The background listens for changes and updates immediately.
+
+Example (from tests, via Selenium running in chrome context):
+
+```
+// helpers exposes setDynamicBreakages(driver, entries)
+await setDynamicBreakages(driver, [
+  {
+    id: "my-test",
+    domains: ["www.example.com"],
+    message: "Test message",
+    condition: { "type": "test", "ret": true }
+  }
+]);
+```
+
+Conditions
+
+- Conditions live under `src/conditions/` and can be referenced in a breakage via the `condition` field.
+- Supported types: `and`, `or`, `test` (for simple boolean returns). The factory may be extended with new types.
 
 To reset “Don’t show again” choices, clear the add-on’s local storage or reinstall the extension.
 

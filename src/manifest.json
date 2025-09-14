@@ -3,7 +3,7 @@
   "name": "IPP Add-on Activator",
   "version": "0.0.1",
   "description": "A system add-on to activate IPP in 143",
-  "permissions": ["storage", "tabs", "cookies"],
+  "permissions": ["tabs", "cookies"],
   "host_permissions": ["<all_urls>"],
   "browser_specific_settings": {
     "gecko": {

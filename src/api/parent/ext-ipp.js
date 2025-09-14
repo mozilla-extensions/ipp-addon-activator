@@ -91,14 +91,6 @@ this.ippActivator = class extends ExtensionAPI {
                     return true;
                   },
                 },
-                {
-                  label: "Don't show again",
-                  accessKey: 'D',
-                  callback() {
-                    done('not-anymore');
-                    return true;
-                  },
-                },
               ];
 
               nbox.appendNotification(

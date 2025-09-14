@@ -80,26 +80,4 @@ describe('IPP Add-on Activator', function () {
     const reappeared = await waitForNotification(driver, 15000);
     expect(reappeared).to.equal(true, 'notification should reappear on refresh');
   });
-
-  it("shows the notification and respects 'Don't show again'", async () => {
-    await setContentContext(driver);
-    await driver.get(testUrl);
-    await waitForNotification(driver);
-
-    const clicked = await clickNotificationButton(driver, "Don't show again");
-    expect(clicked).to.equal(true, "should click 'Don't show again'");
-    await waitNotificationGone(driver);
-
-    // Revisit: it should NOT reappear
-    await setContentContext(driver);
-    await driver.get(testUrl);
-    let reappeared = true;
-    try {
-      await waitForNotification(driver, 3000);
-      reappeared = true;
-    } catch (_) {
-      reappeared = false; // timeout expected
-    }
-    expect(reappeared).to.equal(false, 'notification should not reappear');
-  });
 });

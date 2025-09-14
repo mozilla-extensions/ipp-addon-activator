@@ -5,13 +5,10 @@
 import { ConditionFactory } from './conditions/factory.js';
 
 class IPPAddonActivator {
-  #ignoredBreakages;
   #breakages;
   #baseBreakages;
 
   constructor() {
-    this.#ignoredBreakages = new Set();
-
     this.tabUpdated = this.#tabUpdated.bind(this);
 
     browser.ippActivator.isTesting().then(async (isTesting) => {
@@ -43,8 +40,6 @@ class IPPAddonActivator {
   }
 
   async #init() {
-    await this.#loadIgnored();
-
     // React on URL changes and reloads (status: 'loading')
     browser.tabs.onUpdated.addListener(this.tabUpdated, { properties: ['url', 'status'] });
   }
@@ -85,18 +80,11 @@ class IPPAddonActivator {
     const breakage = this.#breakages.find((breakage) => breakage.domains.includes(domain));
     if (!breakage) return;
 
-    if (this.#ignoredBreakages.has(breakage.id)) return;
-
     if (!(await ConditionFactory.run(tab.url, breakage.condition))) return;
 
     const answer = await browser.ippActivator.showMessage(breakage.message);
     switch (answer) {
       case 'closed':
-        break;
-
-      case 'not-anymore':
-        this.#ignoredBreakages.add(breakage.id);
-        this.#persistIgnored();
         break;
 
       case 'clicked':
@@ -107,25 +95,6 @@ class IPPAddonActivator {
       default:
         console.log('Unexpected result:', answer);
         break;
-    }
-  }
-
-  async #loadIgnored() {
-    try {
-      const { ignoredBreakages } = await browser.storage.local.get('ignoredBreakages');
-      if (Array.isArray(ignoredBreakages)) {
-        this.#ignoredBreakages = new Set(ignoredBreakages);
-      }
-    } catch (_) {
-      // Nothing to do here. The storage does not exist yet.
-    }
-  }
-
-  async #persistIgnored() {
-    try {
-      await browser.storage.local.set({ ignoredBreakages: Array.from(this.#ignoredBreakages) });
-    } catch (e) {
-      console.log('Unable to store the ignored-breakagees');
     }
   }
 

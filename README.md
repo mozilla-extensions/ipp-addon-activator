@@ -82,7 +82,7 @@ Each entry has the shape:
 
 Notes:
 
-- `id`: unique identifier for the breakage kind (used to remember “Don’t show again”).
+- `id`: unique identifier for the breakage kind.
 - `domains`: list of hosts for which to show the notification.
 - `message`: text displayed in the browser notification bar.
 - Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`). In testing mode, entries from `testing.json` are appended to those in `base.json`.
@@ -179,7 +179,7 @@ Composing conditions
   }
   ```
 
-To reset “Don’t show again” choices, clear the add-on’s local storage or reinstall the extension.
+Notes: the notification presents a single “OK” action to allow the site and reload. There is no persistent “Don’t show again” option.
 
 ## License
 

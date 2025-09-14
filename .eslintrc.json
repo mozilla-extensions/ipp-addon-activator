@@ -17,5 +17,12 @@
   "rules": {
     "no-unused-vars": ["warn", { "args": "none", "ignoreRestSiblings": true }],
     "no-console": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*.js"],
+      "env": { "mocha": true, "node": true },
+      "parserOptions": { "sourceType": "script" }
+    }
+  ]
 }

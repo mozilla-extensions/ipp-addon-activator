@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const { expect } = require('chai');
+
 const {
   buildXpiIfMissing,
   createDriver,
@@ -15,7 +16,7 @@ const {
   waitReloadSince,
 } = require('./helpers');
 
-describe('IPP Add-on Activator (E2E)', function () {
+describe('IPP Add-on Activator', function () {
   this.timeout(120_000);
 
   let driver;

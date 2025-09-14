@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { ConditionFactory } from './conditions/factory.js';
+
 class IPPAddonActivator {
   #ignoredBreakages;
   #breakages;
@@ -78,6 +80,8 @@ class IPPAddonActivator {
     if (!breakage) return;
 
     if (this.#ignoredBreakages.has(breakage.id)) return;
+
+    if (!(await ConditionFactory.run(tab.url, breakage.condition))) return;
 
     const answer = await browser.ippActivator.showMessage(breakage.message);
     switch (answer) {

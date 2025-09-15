@@ -42,7 +42,7 @@ this.ippActivator = class extends ExtensionAPI {
         isIPPActive() {
           return lazy.IPProtectionService.isActive;
         },
-        async getDynamicBreakages() {
+        getDynamicBreakages() {
           try {
             const json = Services.prefs.getStringPref(PREF_DYNAMIC_BREAKAGES, '[]');
             const arr = JSON.parse(json);
@@ -91,17 +91,6 @@ this.ippActivator = class extends ExtensionAPI {
                 resolve(result);
               };
 
-              const buttons = [
-                {
-                  label: 'OK',
-                  accessKey: 'O',
-                  callback() {
-                    done('clicked');
-                    return true;
-                  },
-                },
-              ];
-
               nbox.appendNotification(
                 id,
                 {
@@ -113,17 +102,13 @@ this.ippActivator = class extends ExtensionAPI {
                     }
                   },
                 },
-                buttons,
+                [],
               );
             } catch (e) {
               console.log('Unable to show the message', e);
               resolve('closed');
             }
           });
-        },
-        async allowURL(url) {
-          if (!lazy.IPProtectionService.connection) return;
-          lazy.IPProtectionService.connection.addPageExclusion(url);
         },
         onDynamicBreakagesUpdated: new lazy.ExtensionCommon.EventManager({
           context,

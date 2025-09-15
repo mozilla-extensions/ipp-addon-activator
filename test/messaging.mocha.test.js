@@ -9,11 +9,8 @@ const {
   createDriver,
   setContentContext,
   waitForNotification,
-  clickNotificationButton,
   dismissNotification,
   waitNotificationGone,
-  getNavigationState,
-  waitReloadSince,
   setDynamicBreakages,
   clearDynamicBreakages,
 } = require('./helpers');
@@ -50,19 +47,6 @@ describe('IPP Add-on Activator', function () {
     if (driver) await driver.quit();
   });
 
-  it("clicking 'OK' reloads the page", async () => {
-    await setContentContext(driver);
-    await driver.get(testUrl);
-    await waitForNotification(driver);
-
-    const before = await getNavigationState(driver);
-    const okClicked = await clickNotificationButton(driver, 'OK');
-    expect(okClicked).to.equal(true, "should click 'OK'");
-
-    const reloaded = await waitReloadSince(driver, before, 20000);
-    expect(reloaded).to.equal(true, 'page should reload after OK');
-  });
-
   it('dismiss and reappears on refresh', async () => {
     await setContentContext(driver);
     await driver.get(testUrl);
@@ -73,7 +57,7 @@ describe('IPP Add-on Activator', function () {
 
     await waitNotificationGone(driver);
 
-    // Refresh; since we didn't choose "Don't show again", it should reappear
+    // Refresh; since the notification is informational, it should reappear
     await setContentContext(driver);
     await driver.navigate().refresh();
     const reappeared = await waitForNotification(driver, 15000);

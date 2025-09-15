@@ -54,20 +54,6 @@
           }
         ],
         "returns": { "type": "string" }
-      },
-      {
-        "name": "allowURL",
-        "type": "function",
-        "description": "Add a specific URL to the list of site exclusion.",
-        "async": true,
-        "parameters": [
-          {
-            "name": "url",
-            "type": "string",
-            "description": "The URL to allow."
-          }
-        ],
-        "returns": { "type": "boolean" }
       }
     ],
     "events": [

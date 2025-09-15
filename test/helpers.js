@@ -80,37 +80,6 @@ async function notificationExists(driver) {
   }, NOTIFICATION_ID);
 }
 
-async function clickNotificationButton(driver, labelText) {
-  await setChromeContext(driver);
-  return driver.executeScript(
-    (id, text) => {
-      try {
-        // eslint-disable-next-line no-undef
-        const nb = window.gBrowser.getNotificationBox();
-        const n = nb.getNotificationWithValue?.(id);
-        if (!n) return false;
-        const buttons = Array.from(n.querySelectorAll('button'));
-        const matches = (v) => (v || '').trim() === text;
-        const btn = buttons.find((b) => {
-          const tc = (b.textContent || '').trim();
-          if (matches(tc)) return true;
-          const labels = Array.from(b.querySelectorAll('label'))
-            .map((l) => (l.value || l.textContent || '').trim())
-            .filter(Boolean);
-          return labels.some(matches);
-        });
-        if (!btn) return false;
-        btn.click();
-        return true;
-      } catch (_) {
-        return false;
-      }
-    },
-    NOTIFICATION_ID,
-    labelText,
-  );
-}
-
 async function dismissNotification(driver) {
   await setChromeContext(driver);
   return driver.executeScript((id) => {
@@ -145,34 +114,6 @@ async function dismissNotification(driver) {
 async function waitNotificationGone(driver, timeoutMs = 10000) {
   await setChromeContext(driver);
   return driver.wait(async () => !(await notificationExists(driver)), timeoutMs);
-}
-
-async function getNavigationState(driver) {
-  await setContentContext(driver);
-  return driver.executeScript(() => {
-    try {
-      const entry = performance.getEntriesByType('navigation')[0];
-      return { type: entry?.type || null, timeOrigin: performance.timeOrigin };
-    } catch (_) {
-      return { type: null, timeOrigin: 0 };
-    }
-  });
-}
-
-async function waitReloadSince(driver, prev, timeoutMs = 20000) {
-  await setContentContext(driver);
-  return driver.wait(async () => {
-    return driver.executeScript((p) => {
-      try {
-        const entry = performance.getEntriesByType('navigation')[0];
-        const type = entry?.type || null;
-        const to = performance.timeOrigin;
-        return to !== p.timeOrigin || type === 'reload';
-      } catch (_) {
-        return false;
-      }
-    }, prev);
-  }, timeoutMs);
 }
 
 async function setDynamicBreakages(driver, breakages) {
@@ -216,11 +157,8 @@ module.exports = {
   setContentContext,
   waitForNotification,
   notificationExists,
-  clickNotificationButton,
   dismissNotification,
   waitNotificationGone,
-  getNavigationState,
-  waitReloadSince,
   setDynamicBreakages,
   clearDynamicBreakages,
 };

@@ -176,7 +176,7 @@ Composing conditions
   }
   ```
 
-Notes: the notification presents a single “OK” action to allow the site and reload. There is no persistent “Don’t show again” option.
+Notes: the notification is informational only (no action buttons). Users can dismiss it; it will reappear when conditions are met.
 
 ## License
 

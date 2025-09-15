@@ -90,11 +90,6 @@ class IPPAddonActivator {
       case 'closed':
         break;
 
-      case 'clicked':
-        await browser.ippActivator.allowURL(tab.url);
-        await browser.tabs.reload(tabId, { bypassCache: true });
-        break;
-
       default:
         console.log('Unexpected result:', answer);
         break;

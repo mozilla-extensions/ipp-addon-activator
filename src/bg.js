@@ -7,6 +7,7 @@ import { ConditionFactory } from './conditions/factory.js';
 class IPPAddonActivator {
   #breakages;
   #baseBreakages;
+  #initialized = false;
 
   constructor() {
     this.tabUpdated = this.#tabUpdated.bind(this);
@@ -29,6 +30,7 @@ class IPPAddonActivator {
         }
       });
 
+      // IPP start event: initialize when service starts.
       browser.ippActivator.onIPPActivated.addListener((enabled) => {
         if (enabled) {
           this.#init();
@@ -40,12 +42,16 @@ class IPPAddonActivator {
   }
 
   async #init() {
+    if (this.#initialized) return;
     // React on URL changes and reloads (status: 'loading')
     browser.tabs.onUpdated.addListener(this.tabUpdated, { properties: ['url', 'status'] });
+    this.#initialized = true;
   }
 
   async #uninit() {
+    if (!this.#initialized) return;
     browser.tabs.onUpdated.removeListener(this.tabUpdated);
+    this.#initialized = false;
   }
 
   async #loadAndRebuildBreakages() {

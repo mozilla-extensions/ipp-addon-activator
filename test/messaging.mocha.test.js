@@ -15,7 +15,7 @@ const {
   clearDynamicBreakages,
 } = require('./helpers');
 
-describe('IPP Add-on Activator', function () {
+describe('Notifications', function () {
   this.timeout(120_000);
 
   let driver;

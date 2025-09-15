@@ -38,7 +38,8 @@ export class ConditionFactory {
 
   create(conditionDesc) {
     const conditionClass = CONDITIONS_MAP[conditionDesc.type];
-    if (!conditionClass) throw new Error('No condition type', conditionDesc.type);
+    if (!conditionClass)
+      throw new Error('Unknown condition type: ' + String(conditionDesc?.type));
     return new conditionClass(this, conditionDesc);
   }
 

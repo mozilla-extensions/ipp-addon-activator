@@ -1,6 +1,13 @@
 [
   {
     "domains": ["youtube.com"],
-    "message": "Firefox VPN could break YouTube video playback. Click here to disable Firefox VPN for this domain."
+    "message": "Firefox VPN could break YouTube video playback. Click here to disable Firefox VPN for this domain.",
+    "condition": {
+      "type": "or",
+      "conditions": [
+        { "type": "cookie", "domain": "accounts.google.com", "name": "SID" },
+        { "type": "cookie", "domain": "youtube.com", "name": "SID" }
+      ]
+    }
   }
 ]

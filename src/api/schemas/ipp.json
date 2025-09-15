@@ -42,6 +42,20 @@
         "parameters": []
       },
       {
+        "name": "getBaseDomainFromURL",
+        "type": "function",
+        "description": "Return the eTLD+1 (registrable domain) for the given URL.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL whose base domain is requested."
+          }
+        ],
+        "returns": { "type": "string" }
+      },
+      {
         "name": "allowURL",
         "type": "function",
         "description": "Add a specific URL to the list of site exclusion.",

@@ -1,6 +1,6 @@
 [
   {
-    "domains": ["youtube.com", "www.youtube.com"],
+    "domains": ["youtube.com"],
     "message": "Firefox VPN could break YouTube video playback. Click here to disable Firefox VPN for this domain."
   }
 ]

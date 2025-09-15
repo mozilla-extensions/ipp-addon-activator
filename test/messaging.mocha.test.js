@@ -31,7 +31,7 @@ describe('IPP Add-on Activator', function () {
     // Inject dynamic breakage at runtime for example.com
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com', 'www.example.com'],
+        domains: ['example.com'],
         message:
           'Firefox VPN could break Example video playback. Click here to disable Firefox VPN for this domain.',
         condition: { type: 'test', ret: true },

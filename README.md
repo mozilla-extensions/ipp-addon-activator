@@ -74,16 +74,16 @@ Each entry has the shape:
 
 ```json
 {
-  "domains": ["youtube.com", "www.youtube.com"],
+  "domains": ["example.com"],
   "message": "Notification text to show to the user"
 }
 ```
 
 Notes:
 
-- `domains`: list of hosts for which to show the notification.
+- `domains`: list of registrable domains (eTLD+1, e.g. `example.com`) for which to show the notification. The match includes all subdomains.
 - `message`: text displayed in the browser notification bar.
-- Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`). In testing mode, entries from `testing.json` are appended to those in `base.json`.
+- Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`).
 - Inject dynamic breakages at runtime by setting the string pref `extensions.ippactivator.dynamicBreakages` to a JSON array of entries. The background listens for changes and updates immediately.
 
 Example (from tests, via Selenium running in chrome context):

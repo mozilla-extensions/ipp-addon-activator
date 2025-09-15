@@ -69,7 +69,7 @@ describe('Condition: cookie', function () {
   it('does not show when cookie is missing; shows when present', async () => {
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com', 'www.example.com'],
+        domains: ['example.com'],
         message: 'Cookie basic condition matched',
         condition: { type: 'cookie', domain: 'www.example.com', name: 'ipp_test' },
       },
@@ -101,7 +101,7 @@ describe('Condition: cookie', function () {
     await clearCookie('ipp_value');
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com', 'www.example.com'],
+        domains: ['example.com'],
         message: 'Cookie value match',
         condition: {
           type: 'cookie',
@@ -140,7 +140,7 @@ describe('Condition: cookie', function () {
     await clearCookie('ipp_contains');
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com', 'www.example.com'],
+        domains: ['example.com'],
         message: 'Cookie contains match',
         condition: {
           type: 'cookie',

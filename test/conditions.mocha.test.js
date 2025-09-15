@@ -4,7 +4,6 @@
 
 const { expect } = require('chai');
 const { ConditionFactory } = require('../src/conditions/factory.js');
-console.log(ConditionFactory);
 
 describe('Condition logic', function () {
   it('Condition Factory', async () => {

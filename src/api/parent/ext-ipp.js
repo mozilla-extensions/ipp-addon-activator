@@ -52,6 +52,15 @@ this.ippActivator = class extends ExtensionAPI {
             return [];
           }
         },
+        getBaseDomainFromURL(url) {
+          try {
+            const host = Services.io.newURI(url).host;
+            if (!host) return '';
+            return Services.eTLD.getBaseDomainFromHost(host);
+          } catch (e) {
+            return '';
+          }
+        },
         async showMessage(message) {
           return new Promise((resolve) => {
             try {

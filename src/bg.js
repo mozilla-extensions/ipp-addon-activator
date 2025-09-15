@@ -74,10 +74,13 @@ class IPPAddonActivator {
   async #tabUpdated(tabId, changeInfo, tab) {
     // Only act when the URL changes or a reload starts
     if (!('url' in changeInfo) && changeInfo.status !== 'loading') return;
-    const domain = this.#retrieveDomainFromTab(tab);
-    if (domain === '') return;
 
-    const breakage = this.#breakages.find((breakage) => breakage.domains.includes(domain));
+    const baseDomain = await browser.ippActivator.getBaseDomainFromURL(tab.url);
+    if (!baseDomain) return;
+
+    const breakage = this.#breakages.find(
+      (breakage) => Array.isArray(breakage.domains) && breakage.domains.includes(baseDomain),
+    );
     if (!breakage) return;
 
     if (!(await ConditionFactory.run(tab.url, breakage.condition))) return;
@@ -95,15 +98,6 @@ class IPPAddonActivator {
       default:
         console.log('Unexpected result:', answer);
         break;
-    }
-  }
-
-  #retrieveDomainFromTab(tab) {
-    try {
-      const u = new URL(tab.url);
-      return u.hostname;
-    } catch (e) {
-      return '';
     }
   }
 }

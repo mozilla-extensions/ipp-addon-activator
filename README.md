@@ -83,7 +83,16 @@ Each entry has the shape:
 Notes:
 
 - `domains`: list of registrable domains (eTLD+1, e.g. `example.com`) for which to show the notification. The match includes all subdomains.
-- `message`: text displayed in the browser notification bar.
+- `message`: can be either a string or an array of parts to render rich content.
+  - String example: `"Simple message"`.
+  - Array example:
+    ```json
+    [
+      { "text": "Important: ", "modifier": ["strong"] },
+      { "text": "additional details." }
+    ]
+    ```
+    Supported modifiers: `strong`.
 - `condition` (optional): a Condition object that controls when to show the notification. If omitted, the rule always matches when the domain matches.
 - Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`).
 - Inject dynamic breakages at runtime by setting the string pref `extensions.ippactivator.dynamicBreakages` to a JSON array of entries. The background listens for changes and updates immediately.

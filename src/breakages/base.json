@@ -1,7 +1,10 @@
 [
   {
     "domains": ["youtube.com"],
-    "message": "The website may not work with a VPN. Try signing in or turning VPN off while you use this website.",
+    "message": [
+      { "text": "The website may not work with a VPN.", "modifier": ["strong"] },
+      { "text": " Try signing in or turning VPN off while you use this website." }
+    ],
     "condition": {
       "type": "or",
       "conditions": [

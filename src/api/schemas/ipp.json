@@ -6,14 +6,31 @@
       {
         "name": "showMessage",
         "type": "function",
-        "description": "Show a message using the browser notification box.",
+        "description": "Show a message using the browser notification box. Accepts a string or an array of parts to render (with optional strong modifier).",
         "async": true,
         "returns": { "type": "string" },
         "parameters": [
           {
             "name": "message",
-            "type": "string",
-            "description": "The message to display."
+            "description": "String label or array of {text, modifier} parts.",
+            "choices": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": { "type": "string" },
+                    "modifier": {
+                      "type": "array",
+                      "optional": true,
+                      "items": { "type": "string", "enum": ["strong"] }
+                    }
+                  },
+                  "required": ["text"]
+                }
+              }
+            ]
           }
         ]
       },

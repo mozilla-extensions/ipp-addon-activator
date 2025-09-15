@@ -91,10 +91,34 @@ this.ippActivator = class extends ExtensionAPI {
                 resolve(result);
               };
 
+              const buildLabel = (msg) => {
+                // Accept either string or array of parts {text, modifier}
+                if (Array.isArray(msg)) {
+                  const frag = win.document.createDocumentFragment();
+                  for (const part of msg) {
+                    const text = String(part?.text ?? '');
+                    const mods = Array.isArray(part?.modifier) ? part.modifier : [];
+                    if (mods.includes('strong')) {
+                      const strong = win.document.createElement('strong');
+                      strong.textContent = text;
+                      frag.append(strong);
+                    } else {
+                      frag.append(win.document.createTextNode(text));
+                    }
+                  }
+                  return frag;
+                }
+                return String(msg ?? '');
+              };
+
+              const label = buildLabel(message);
+
               nbox.appendNotification(
                 id,
                 {
-                  label: message || '',
+                  // If label is a string, pass it through; if it's a Node, the
+                  // notification box will handle it as rich content.
+                  label,
                   priority: nbox.PRIORITY_WARNING_HIGH,
                   eventCallback: (event) => {
                     if (event === 'dismissed') {

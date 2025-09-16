@@ -7,7 +7,7 @@
   "scripts": {
     "build": "web-ext build --source-dir src --filename ipp-addon-activator.xpi",
     "start": "web-ext run --source-dir src --verbose --pref devtools.console.stdout.chrome=true --pref devtools.console.stdout.content=true --pref extensions.experiments.enabled=true",
-    "test": "mocha --timeout 120000 \"test/*.mocha.test.js\"",
+    "test": "bash scripts/run-tests-with-nightly.sh",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write ."

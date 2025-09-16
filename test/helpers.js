@@ -31,6 +31,10 @@ async function createDriver() {
   const fxBinary = process.env.FIREFOX_BINARY || undefined;
   const options = new firefox.Options();
   if (fxBinary) options.setBinary(fxBinary);
+  const headless = process.env.FIREFOX_HEADLESS;
+  if (headless && headless !== '0' && String(headless).toLowerCase() !== 'false') {
+    options.addArguments("--headless")
+  }
   options.addArguments('-remote-allow-system-access');
   options.setPreference('extensions.experiments.enabled', true);
   options.setPreference('extensions.ippactivator.testMode', true);

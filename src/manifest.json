@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "IPP Add-on Activator",
-  "version": "0.0.1",
+  "version": "0.1",
   "description": "A system add-on to activate IPP in 143",
   "permissions": ["tabs", "cookies"],
   "host_permissions": ["<all_urls>"],

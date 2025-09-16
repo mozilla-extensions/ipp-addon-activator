@@ -1,6 +1,6 @@
 {
   "name": "ipp-addon-activator",
-  "version": "0.0.1",
+  "version": "0.1",
   "description": "A system add-on to activate IPP in 143",
   "main": "index.js",
   "scripts": {

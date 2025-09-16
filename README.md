@@ -20,6 +20,8 @@ Note: the dev command already sets the needed prefs at runtime.
 
 - `npm run start`: launches Firefox with the add-on in development via `web-ext run` and enables the needed Experiment prefs.
 - `npm run build`: produces the `.xpi` at `web-ext-artifacts/ipp-addon-activator.xpi`.
+- `npm test`: no-op in CI (intentionally disabled).
+- `npm run experimentaltests`: runs the Mocha test suite locally.
 - `npm run lint`: runs ESLint.
 - `npm run lint:fix`: runs ESLint with autofix.
 - `npm run format`: formats files with Prettier.
@@ -51,17 +53,24 @@ The resulting file is placed at `web-ext-artifacts/ipp-addon-activator.xpi`.
 
 ## Tests
 
-Run:
+Tests are disabled by default in CI; locally you can run them with:
 
 ```
 npm run build
-npm run test
+npm run experimentaltests
 ```
 
-Optionally set the Firefox binary path:
+Firefox binary selection:
+
+- If `FIREFOX_BINARY` is set, tests use that Firefox binary.
+- Otherwise, Selenium will try the system default Firefox in PATH.
+
+Examples:
 
 ```
-FIREFOX_BINARY="/path/to/firefox-nightly" npm run test
+FIREFOX_BINARY="/path/to/firefox-nightly" npm run experimentaltests
+# or just rely on system Firefox
+npm run experimentaltests
 ```
 
 ## Configure breakage domains
@@ -76,7 +85,9 @@ Each entry has the shape:
 {
   "domains": ["example.com"],
   "message": "Notification text to show to the user",
-  "condition": { /* optional Condition */ }
+  "condition": {
+    /* optional Condition */
+  }
 }
 ```
 
@@ -87,10 +98,7 @@ Notes:
   - String example: `"Simple message"`.
   - Array example:
     ```json
-    [
-      { "text": "Important: ", "modifier": ["strong"] },
-      { "text": "additional details." }
-    ]
+    [{ "text": "Important: ", "modifier": ["strong"] }, { "text": "additional details." }]
     ```
     Supported modifiers: `strong`.
 - `condition` (optional): a Condition object that controls when to show the notification. If omitted, the rule always matches when the domain matches.

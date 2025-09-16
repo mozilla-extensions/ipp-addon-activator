@@ -3,11 +3,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* eslint-disable no-console */
-const path = require('node:path');
-const fs = require('node:fs');
-const { spawnSync } = require('node:child_process');
-const { Builder } = require('selenium-webdriver');
-const firefox = require('selenium-webdriver/firefox');
+import path from 'node:path';
+import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { Builder } from 'selenium-webdriver';
+import firefox from 'selenium-webdriver/firefox.js';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const NOTIFICATION_ID = 'ipp-activator-notification';
 const DYNAMIC_BREAKAGES_PREF = 'extensions.ippactivator.dynamicBreakages';
@@ -35,19 +39,19 @@ async function createDriver() {
   return await new Builder().forBrowser('firefox').setFirefoxOptions(options).build();
 }
 
-function defineMozContext(driver) {
-  const { Command } = require('selenium-webdriver/lib/command');
+async function defineMozContext(driver) {
+  const { Command } = await import('selenium-webdriver/lib/command.js');
   driver.getExecutor().defineCommand('mozSetContext', 'POST', '/session/:sessionId/moz/context');
   return { Command };
 }
 
 async function setChromeContext(driver) {
-  const { Command } = defineMozContext(driver);
+  const { Command } = await defineMozContext(driver);
   await driver.execute(new Command('mozSetContext').setParameter('context', 'chrome'));
 }
 
 async function setContentContext(driver) {
-  const { Command } = defineMozContext(driver);
+  const { Command } = await defineMozContext(driver);
   await driver.execute(new Command('mozSetContext').setParameter('context', 'content'));
 }
 
@@ -150,7 +154,7 @@ async function clearDynamicBreakages(driver) {
   }, DYNAMIC_BREAKAGES_PREF);
 }
 
-module.exports = {
+export {
   buildXpiIfMissing,
   createDriver,
   setChromeContext,

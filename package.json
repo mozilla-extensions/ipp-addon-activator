@@ -3,6 +3,7 @@
   "version": "0.1",
   "description": "A system add-on to activate IPP in 143",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "web-ext build --source-dir src --filename ipp-addon-activator.xpi",
     "start": "web-ext run --source-dir src --verbose --pref devtools.console.stdout.chrome=true --pref devtools.console.stdout.content=true --pref extensions.experiments.enabled=true",

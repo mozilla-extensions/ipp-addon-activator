@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const { expect } = require('chai');
-const { ConditionFactory } = require('../src/conditions/factory.js');
+import { expect } from 'chai';
+import { ConditionFactory } from '../src/conditions/factory.js';
 
 describe('Condition logic', function () {
   it('Condition Factory', async () => {

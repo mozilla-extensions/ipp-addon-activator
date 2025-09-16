@@ -2,3 +2,5 @@ package-lock.json
 node_modules
 *.swp
 web-ext-artifacts/*.xpi
+dist
+*.pyc

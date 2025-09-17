@@ -12,5 +12,20 @@
         { "type": "cookie", "domain": "youtube.com", "name": "SID" }
       ]
     }
+  },
+  {
+    "domains": ["reddit.com"],
+    "message": [
+      { "text": "The website may not work with a VPN.", "modifier": ["strong"] },
+      { "text": " Try signing in or turning VPN off while you use this website." }
+    ],
+    "condition": { "type": "cookie", "domain": ".reddit.com", "name": "reddit_session" }
+  },
+  {
+    "domains": ["disneyplus.com", "netflix.com", "wiki.mozilla.org", "bugs.webkit.org"],
+    "message": [
+      { "text": "The website may not work with a VPN.", "modifier": ["strong"] },
+      { "text": " Try sturning VPN off while you use this website." }
+    ]
   }
 ]

@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import ConditionAnd from './and.js';
-import ConditionOr from './or.js';
-import ConditionTest from './test.js';
-import ConditionCookie from './cookie.js';
+import ConditionAnd from './and.mjs';
+import ConditionOr from './or.mjs';
+import ConditionTest from './test.mjs';
+import ConditionCookie from './cookie.mjs';
 
 const CONDITIONS_MAP = {
   and: ConditionAnd,
@@ -15,25 +15,20 @@ const CONDITIONS_MAP = {
 };
 
 export class ConditionFactory {
-  #url;
   #storage = {};
 
-  static async run(url, conditionDesc) {
+  static async run(conditionDesc) {
     if (conditionDesc === undefined) {
       return true;
     }
 
-    const factory = new ConditionFactory(url);
+    const factory = new ConditionFactory();
 
     const condition = await factory.create(conditionDesc);
 
     await condition.init();
 
     return condition.check();
-  }
-
-  constructor(url) {
-    this.#url = url;
   }
 
   create(conditionDesc) {

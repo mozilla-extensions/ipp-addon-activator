@@ -2,7 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { ConditionFactory } from './conditions/factory.js';
+/* global browser */
+
+import { ConditionFactory } from './conditions/factory.mjs';
 
 class IPPAddonActivator {
   #breakages;
@@ -42,14 +44,20 @@ class IPPAddonActivator {
   }
 
   async #init() {
-    if (this.#initialized) return;
+    if (this.#initialized) {
+      return;
+    }
     // React on URL changes and reloads (status: 'loading')
-    browser.tabs.onUpdated.addListener(this.tabUpdated, { properties: ['url', 'status'] });
+    browser.tabs.onUpdated.addListener(this.tabUpdated, {
+      properties: ['url', 'status'],
+    });
     this.#initialized = true;
   }
 
   async #uninit() {
-    if (!this.#initialized) return;
+    if (!this.#initialized) {
+      return;
+    }
     browser.tabs.onUpdated.removeListener(this.tabUpdated);
     this.#initialized = false;
   }
@@ -71,7 +79,7 @@ class IPPAddonActivator {
       const dyn = await browser.ippActivator.getDynamicBreakages();
       dynamicBreakages = Array.isArray(dyn) ? dyn : [];
     } catch (_) {
-      console.log('Unable to retrieve the dynamic breakages');
+      console.warn('Unable to retrieve the dynamic breakages');
     }
 
     this.#breakages = [...this.#baseBreakages, ...dynamicBreakages];
@@ -79,17 +87,25 @@ class IPPAddonActivator {
 
   async #tabUpdated(tabId, changeInfo, tab) {
     // Only act when the URL changes or a reload starts
-    if (!('url' in changeInfo) && changeInfo.status !== 'loading') return;
+    if (!('url' in changeInfo) && changeInfo.status !== 'loading') {
+      return;
+    }
 
     const baseDomain = await browser.ippActivator.getBaseDomainFromURL(tab.url);
-    if (!baseDomain) return;
+    if (!baseDomain) {
+      return;
+    }
 
     const breakage = this.#breakages.find(
-      (breakage) => Array.isArray(breakage.domains) && breakage.domains.includes(baseDomain),
+      (b) => Array.isArray(b.domains) && b.domains.includes(baseDomain),
     );
-    if (!breakage) return;
+    if (!breakage) {
+      return;
+    }
 
-    if (!(await ConditionFactory.run(tab.url, breakage.condition))) return;
+    if (!(await ConditionFactory.run(breakage.condition))) {
+      return;
+    }
 
     const answer = await browser.ippActivator.showMessage(breakage.message);
     switch (answer) {
@@ -97,7 +113,7 @@ class IPPAddonActivator {
         break;
 
       default:
-        console.log('Unexpected result:', answer);
+        console.warn('Unexpected result:', answer);
         break;
     }
   }

@@ -3,21 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { expect } from 'chai';
-import { ConditionFactory } from '../src/conditions/factory.js';
+import { ConditionFactory } from '../src/conditions/factory.mjs';
 
 describe('Condition logic', function () {
   it('Condition Factory', async () => {
-    expect(await ConditionFactory.run('http://example.com', undefined)).to.equal(
-      true,
-      'Undefined conditions means OK',
-    );
+    expect(await ConditionFactory.run(undefined)).to.equal(true, 'Undefined conditions means OK');
 
-    expect(await ConditionFactory.run('http://example.com', { type: 'test', ret: true })).to.equal(
+    expect(await ConditionFactory.run({ type: 'test', ret: true })).to.equal(
       true,
       'Condition test works',
     );
 
-    expect(await ConditionFactory.run('http://example.com', { type: 'test', ret: false })).to.equal(
+    expect(await ConditionFactory.run({ type: 'test', ret: false })).to.equal(
       false,
       'Condition test works (2)',
     );
@@ -29,24 +26,25 @@ describe('Condition logic', function () {
   });
 
   it('Condition And', async () => {
+    expect(await ConditionFactory.run({ type: 'and', conditions: [] })).to.equal(
+      true,
+      'Condition and: if no conditions, true',
+    );
     expect(
-      await ConditionFactory.run('http://example.com', { type: 'and', conditions: [] }),
-    ).to.equal(true, 'Condition and: if no conditions, true');
-    expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'and',
         conditions: [{ type: 'test', ret: true }],
       }),
     ).to.equal(true, 'Condition and: one true condition => true');
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'and',
         conditions: [{ type: 'test', ret: false }],
       }),
     ).to.equal(false, 'Condition and: one false condition => false');
 
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'and',
         conditions: [
           { type: 'test', ret: true },
@@ -56,7 +54,7 @@ describe('Condition logic', function () {
     ).to.equal(true, 'Condition and: multiple true conditions');
 
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'and',
         conditions: [
           { type: 'test', ret: true },
@@ -68,26 +66,27 @@ describe('Condition logic', function () {
   });
 
   it('Condition Or', async () => {
-    expect(
-      await ConditionFactory.run('http://example.com', { type: 'or', conditions: [] }),
-    ).to.equal(false, 'Condition or: if no conditions, false');
+    expect(await ConditionFactory.run({ type: 'or', conditions: [] })).to.equal(
+      false,
+      'Condition or: if no conditions, false',
+    );
 
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'or',
         conditions: [{ type: 'test', ret: true }],
       }),
     ).to.equal(true, 'Condition or: one true condition => true');
 
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'or',
         conditions: [{ type: 'test', ret: false }],
       }),
     ).to.equal(false, 'Condition or: one false condition => false');
 
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'or',
         conditions: [
           { type: 'test', ret: true },
@@ -97,7 +96,7 @@ describe('Condition logic', function () {
     ).to.equal(true, 'Condition or: multiple true conditions');
 
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'or',
         conditions: [
           { type: 'test', ret: false },
@@ -107,7 +106,7 @@ describe('Condition logic', function () {
     ).to.equal(false, 'Condition or: multiple false conditions');
 
     expect(
-      await ConditionFactory.run('http://example.com', {
+      await ConditionFactory.run({
         type: 'or',
         conditions: [
           { type: 'test', ret: false },

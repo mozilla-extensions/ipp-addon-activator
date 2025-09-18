@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import ConditionBase from './base.js';
+import ConditionBase from './base.mjs';
 
 class ConditionAnd extends ConditionBase {
   #conditions;
@@ -14,12 +14,16 @@ class ConditionAnd extends ConditionBase {
   }
 
   async init() {
-    for (const c of this.#conditions) await c.init();
+    for (const c of this.#conditions) {
+      await c.init();
+    }
   }
 
   check() {
     for (const c of this.#conditions) {
-      if (!c.check()) return false;
+      if (!c.check()) {
+        return false;
+      }
     }
     return true;
   }

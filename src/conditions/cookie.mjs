@@ -2,7 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import ConditionBase from './base.js';
+/* global browser */
+
+import ConditionBase from './base.mjs';
 
 class ConditionCookie extends ConditionBase {
   static STORAGE_KEY = 'cookies-';
@@ -13,7 +15,9 @@ class ConditionCookie extends ConditionBase {
 
   async init() {
     const { domain } = this.desc;
-    if (!domain) return;
+    if (!domain) {
+      return;
+    }
 
     let cache = this.factory.retrieveData(ConditionCookie.STORAGE_KEY + domain);
     if (Array.isArray(cache)) {
@@ -31,18 +35,23 @@ class ConditionCookie extends ConditionBase {
   }
 
   check() {
-    const { domain, name, value, value_contain } = this.desc;
-    if (!domain || !name) return false;
+    if (!this.desc.domain || !this.desc.name) {
+      return false;
+    }
 
-    const cookies = this.factory.retrieveData(ConditionCookie.STORAGE_KEY + domain) || [];
-    const c = cookies.find((ck) => ck && ck.name === name);
-    if (!c) return false;
+    const cookies = this.factory.retrieveData(ConditionCookie.STORAGE_KEY + this.desc.domain) || [];
+    const cookie = cookies.find((c) => c && c.name === this.desc.name);
+    if (!cookie) {
+      return false;
+    }
 
-    if (typeof value === 'string' && c.value !== value) return false;
+    if (typeof this.desc.value === 'string' && c.value !== this.desc.value) {
+      return false;
+    }
 
     if (
-      typeof value_contain === 'string' &&
-      (typeof c.value !== 'string' || !c.value.includes(value_contain))
+      typeof this.desc.value_contain === 'string' &&
+      (typeof c.value !== 'string' || !c.value.includes(this.desc.value_contain))
     ) {
       return false;
     }

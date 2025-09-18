@@ -147,6 +147,14 @@ Supported types
     }
     ```
 
+- **not**: logical negation of a single sub-condition.
+  - Fields: `condition: Condition`
+  - Result: negates the result of the given condition. If `condition` is omitted, defaults to `true`.
+  - Example:
+    ```json
+    { "type": "not", "condition": { "type": "test", "ret": false } }
+    ```
+
 - **test**: helper for simple boolean checks in examples/tests.
   - Fields: `ret: boolean`
   - Result: returns `ret` as-is.
@@ -191,6 +199,17 @@ Composing conditions
           { "type": "test", "ret": true }
         ]
       }
+    ]
+  }
+  ```
+
+- You can also use `not` to invert checks, for example:
+  ```json
+  {
+    "type": "and",
+    "conditions": [
+      { "type": "not", "condition": { "type": "cookie", "domain": "example.com", "name": "opt_out" } },
+      { "type": "cookie", "domain": "example.com", "name": "session" }
     ]
   }
   ```

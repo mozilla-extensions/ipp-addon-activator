@@ -6,12 +6,14 @@ import ConditionAnd from './and.mjs';
 import ConditionOr from './or.mjs';
 import ConditionTest from './test.mjs';
 import ConditionCookie from './cookie.mjs';
+import ConditionNot from './not.mjs';
 
 const CONDITIONS_MAP = {
   and: ConditionAnd,
   test: ConditionTest,
   or: ConditionOr,
   cookie: ConditionCookie,
+  not: ConditionNot,
 };
 
 export class ConditionFactory {

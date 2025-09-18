@@ -115,4 +115,33 @@ describe('Condition logic', function () {
       }),
     ).to.equal(true, 'Condition or: multiple mix conditions');
   });
+
+  it('Condition Not', async () => {
+    // Missing inner condition -> true by default
+    expect(await ConditionFactory.run({ type: 'not' })).to.equal(
+      true,
+      'Condition not: missing condition defaults to true',
+    );
+
+    // not(true) -> false
+    expect(
+      await ConditionFactory.run({ type: 'not', condition: { type: 'test', ret: true } }),
+    ).to.equal(false, 'Condition not: not(true) => false');
+
+    // not(false) -> true
+    expect(
+      await ConditionFactory.run({ type: 'not', condition: { type: 'test', ret: false } }),
+    ).to.equal(true, 'Condition not: not(false) => true');
+
+    // Compose with and/or
+    expect(
+      await ConditionFactory.run({
+        type: 'and',
+        conditions: [
+          { type: 'not', condition: { type: 'test', ret: false } },
+          { type: 'test', ret: true },
+        ],
+      }),
+    ).to.equal(true, 'Condition not: composition with and/or');
+  });
 });

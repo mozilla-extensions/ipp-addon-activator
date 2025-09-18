@@ -6,8 +6,6 @@
   "globals": {
     "browser": "readonly",
     "ChromeUtils": "readonly",
-    "ExtensionAPI": "readonly",
-    "ExtensionCommon": "readonly",
     "Services": "readonly"
   },
   "extends": ["eslint:recommended", "plugin:prettier/recommended"],

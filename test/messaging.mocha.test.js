@@ -11,7 +11,7 @@ import {
   waitForNotification,
   dismissNotification,
   waitNotificationGone,
-  setDynamicBreakages,
+  setDynamicTabBreakages,
   clearDynamicBreakages,
 } from "./helpers.js";
 
@@ -26,7 +26,7 @@ describe("Notifications", function () {
     driver = await createDriver();
     await driver.installAddon(xpiPath, true);
     // Inject dynamic breakage at runtime for example.com
-    await setDynamicBreakages(driver, [
+    await setDynamicTabBreakages(driver, [
       {
         domains: ["example.com"],
         message:

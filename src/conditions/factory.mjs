@@ -7,6 +7,7 @@ import ConditionOr from "./or.mjs";
 import ConditionTest from "./test.mjs";
 import ConditionCookie from "./cookie.mjs";
 import ConditionNot from "./not.mjs";
+import ConditionUrl from "./url.mjs";
 
 const CONDITIONS_MAP = {
   and: ConditionAnd,
@@ -14,17 +15,23 @@ const CONDITIONS_MAP = {
   or: ConditionOr,
   cookie: ConditionCookie,
   not: ConditionNot,
+  url: ConditionUrl,
 };
 
 export class ConditionFactory {
   #storage = {};
+  #context = {};
 
-  static async run(conditionDesc) {
+  constructor(context = {}) {
+    this.#context = context || {};
+  }
+
+  static async run(conditionDesc, context = {}) {
     if (conditionDesc === undefined) {
       return true;
     }
 
-    const factory = new ConditionFactory();
+    const factory = new ConditionFactory(context);
 
     const condition = await factory.create(conditionDesc);
 
@@ -47,5 +54,9 @@ export class ConditionFactory {
 
   retrieveData(key) {
     return this.#storage[key];
+  }
+
+  get context() {
+    return this.#context;
   }
 }

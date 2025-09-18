@@ -75,9 +75,10 @@ npm run experimentaltests
 
 ## Configure breakage domains
 
-Breakage definitions are JSON files under `src/breakages/`:
+Breakage definitions are JSON files under `src/breakages/` and are split by trigger:
 
-- `src/breakages/base.json`: entries used in normal operation.
+- `src/breakages/tab.json`: entries used when the top-level tab URL changes or the tab becomes active.
+- `src/breakages/webrequest.json`: entries used when matching network activity occurs (webRequest).
 
 Each entry has the shape:
 
@@ -106,17 +107,29 @@ Notes:
     Supported modifiers: `strong`.
 - `condition` (optional): a Condition object that controls when to show the notification. If omitted, the rule always matches when the domain matches.
 - Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`).
-- Inject dynamic breakages at runtime by setting the string pref `extensions.ippactivator.dynamicBreakages` to a JSON array of entries. The background listens for changes and updates immediately.
+- Inject dynamic breakages at runtime via string prefs to JSON arrays:
+  - `extensions.ippactivator.dynamicTabBreakages` for tab-triggered breakages
+  - `extensions.ippactivator.dynamicWebRequestBreakages` for webRequest-triggered breakages
+    The background listens for changes and updates immediately.
 
-Example (from tests, via Selenium running in chrome context):
+Examples (from tests, via Selenium running in chrome context):
 
 ```
-// helpers exposes setDynamicBreakages(driver, entries)
-await setDynamicBreakages(driver, [
+// Set dynamic TAB breakages only
+await setDynamicTabBreakages(driver, [
   {
     domains: ["www.example.com"],
     message: "Test message",
     condition: { "type": "test", "ret": true }
+  }
+]);
+
+// Set dynamic WEBREQUEST breakages only
+await setDynamicWebRequestBreakages(driver, [
+  {
+    domains: ["api.example.com"],
+    message: "Matched request",
+    condition: { "type": "url", "pattern": "https://api\\.example\\.com/" }
   }
 ]);
 ```
@@ -187,6 +200,14 @@ Supported types
       "name": "sessionid",
       "value": "abc123"
     }
+    ```
+
+- **url**: matches a URL against a regular expression.
+  - Fields:
+    - `pattern` (string, required): JavaScript RegExp pattern (without flags) tested against a URL string.
+  - Example:
+    ```json
+    { "type": "url", "pattern": "https://example\\.com/api" }
     ```
     ```json
     {

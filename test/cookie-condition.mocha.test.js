@@ -10,7 +10,7 @@ import {
   setContentContext,
   waitForNotification,
   dismissNotification,
-  setDynamicBreakages,
+  setDynamicTabBreakages,
   clearDynamicBreakages,
 } from "./helpers.js";
 
@@ -67,7 +67,7 @@ describe("Condition: cookie", function () {
   });
 
   it("does not show when cookie is missing; shows when present", async () => {
-    await setDynamicBreakages(driver, [
+    await setDynamicTabBreakages(driver, [
       {
         domains: ["example.com"],
         message: "Cookie basic condition matched",
@@ -106,7 +106,7 @@ describe("Condition: cookie", function () {
 
   it("matches exact value when value is specified", async () => {
     await clearCookie("ipp_value");
-    await setDynamicBreakages(driver, [
+    await setDynamicTabBreakages(driver, [
       {
         domains: ["example.com"],
         message: "Cookie value match",
@@ -148,7 +148,7 @@ describe("Condition: cookie", function () {
 
   it("matches substring when value_contain is specified", async () => {
     await clearCookie("ipp_contains");
-    await setDynamicBreakages(driver, [
+    await setDynamicTabBreakages(driver, [
       {
         domains: ["example.com"],
         message: "Cookie contains match",

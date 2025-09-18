@@ -19,11 +19,10 @@ class ConditionNot extends ConditionBase {
   }
 
   check() {
-    // If no inner condition is provided, default to true
-    // (consistent with providing a vacuous truthy default like AND []).
     if (!this.#condition) {
       return true;
     }
+
     return !this.#condition.check();
   }
 }

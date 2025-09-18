@@ -12,7 +12,7 @@ import {
   waitForNotification,
   notificationExists,
   dismissNotification,
-  setDynamicBreakages,
+  setDynamicTabBreakages,
   clearDynamicBreakages,
 } from "./helpers.js";
 
@@ -28,7 +28,7 @@ describe("Notifications only on active tab", function () {
     await driver.installAddon(xpiPath, true);
     await clearDynamicBreakages(driver);
     // Inject a breakage for example.com that always matches
-    await setDynamicBreakages(driver, [
+    await setDynamicTabBreakages(driver, [
       {
         domains: ["example.com"],
         message:

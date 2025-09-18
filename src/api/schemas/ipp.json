@@ -8,7 +8,6 @@
         "type": "function",
         "description": "Show a message using the browser notification box. Accepts a string or an array of parts to render (with optional strong modifier).",
         "async": true,
-        "returns": { "type": "string" },
         "parameters": [
           {
             "name": "message",
@@ -51,9 +50,17 @@
         "parameters": []
       },
       {
-        "name": "getDynamicBreakages",
+        "name": "getDynamicTabBreakages",
         "type": "function",
-        "description": "Return dynamic breakages configured via preference.",
+        "description": "Return dynamic tab breakages (pref: extensions.ippactivator.dynamicTabBreakages).",
+        "async": true,
+        "returns": { "type": "array", "items": { "type": "object" } },
+        "parameters": []
+      },
+      {
+        "name": "getDynamicWebRequestBreakages",
+        "type": "function",
+        "description": "Return dynamic webRequest breakages (pref: extensions.ippactivator.dynamicWebRequestBreakages).",
         "async": true,
         "returns": { "type": "array", "items": { "type": "object" } },
         "parameters": []
@@ -94,9 +101,28 @@
         ]
       },
       {
-        "name": "onDynamicBreakagesUpdated",
+        "name": "onDynamicTabBreakagesUpdated",
         "type": "function",
-        "description": "Fired when dynamic breakages preference changes.",
+        "description": "Fired when dynamicTabBreakages preference changes.",
+        "parameters": [
+          {
+            "name": "listener",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "optional": true,
+                "properties": {}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "onDynamicWebRequestBreakagesUpdated",
+        "type": "function",
+        "description": "Fired when dynamicWebRequestBreakages preference changes.",
         "parameters": [
           {
             "name": "listener",

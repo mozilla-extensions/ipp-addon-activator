@@ -7,18 +7,28 @@
 import { ConditionFactory } from "./conditions/factory.mjs";
 
 class IPPAddonActivator {
-  #breakages;
-  #baseBreakages;
   #initialized = false;
-  #pendingTabs = new Set();
+
+  #tabBaseBreakages;
+  #webrequestBaseBreakages;
+
+  #tabBreakages;
+  #webrequestBreakages;
+
+  #pendingTabs = new Set(); // pending due to tab URL change while inactive
+  #pendingWebRequests = new Map(); // tabId -> Set of pending request URLs
 
   constructor() {
     this.tabUpdated = this.#tabUpdated.bind(this);
     this.tabActivated = this.#tabActivated.bind(this);
+    this.onRequest = this.#onRequest.bind(this);
 
     browser.ippActivator.isTesting().then(async (isTesting) => {
       await this.#loadAndRebuildBreakages();
-      browser.ippActivator.onDynamicBreakagesUpdated.addListener(() =>
+      browser.ippActivator.onDynamicTabBreakagesUpdated.addListener(() =>
+        this.#loadAndRebuildBreakages(),
+      );
+      browser.ippActivator.onDynamicWebRequestBreakagesUpdated.addListener(() =>
         this.#loadAndRebuildBreakages(),
       );
 
@@ -47,12 +57,22 @@ class IPPAddonActivator {
     if (this.#initialized) {
       return;
     }
+
     // React on URL changes and reloads (status: 'loading')
     browser.tabs.onUpdated.addListener(this.tabUpdated, {
       properties: ["url", "status"],
     });
+
     // Track when a tab becomes active to show deferred notifications
     browser.tabs.onActivated.addListener(this.tabActivated);
+
+    // Re-evaluate conditions when relevant network activity happens
+    browser.webRequest.onBeforeRequest.addListener(
+      this.onRequest,
+      { urls: ["<all_urls>"], types: ["media", "sub_frame", "xmlhttprequest"] },
+      [],
+    );
+
     this.#initialized = true;
   }
 
@@ -60,32 +80,58 @@ class IPPAddonActivator {
     if (!this.#initialized) {
       return;
     }
+
     browser.tabs.onUpdated.removeListener(this.tabUpdated);
     browser.tabs.onActivated.removeListener(this.tabActivated);
+    browser.webRequest.onBeforeRequest.removeListener(this.onRequest);
+
     this.#initialized = false;
   }
 
   async #loadAndRebuildBreakages() {
-    if (!this.#baseBreakages) {
+    if (!this.#tabBaseBreakages) {
       try {
-        const url = browser.runtime.getURL("breakages/base.json");
+        const url = browser.runtime.getURL("breakages/tab.json");
         const res = await fetch(url);
         const base = await res.json();
-        this.#baseBreakages = Array.isArray(base) ? base : [];
+        this.#tabBaseBreakages = Array.isArray(base) ? base : [];
       } catch (e) {
-        this.#baseBreakages = [];
+        this.#tabBaseBreakages = [];
       }
     }
 
-    let dynamicBreakages = [];
-    try {
-      const dyn = await browser.ippActivator.getDynamicBreakages();
-      dynamicBreakages = Array.isArray(dyn) ? dyn : [];
-    } catch (_) {
-      console.warn("Unable to retrieve the dynamic breakages");
+    if (!this.#webrequestBaseBreakages) {
+      try {
+        const url = browser.runtime.getURL("breakages/webrequest.json");
+        const res = await fetch(url);
+        const base = await res.json();
+        this.#webrequestBaseBreakages = Array.isArray(base) ? base : [];
+      } catch (e) {
+        this.#webrequestBaseBreakages = [];
+      }
     }
 
-    this.#breakages = [...this.#baseBreakages, ...dynamicBreakages];
+    let dynamicTab = [];
+    try {
+      const dynT = await browser.ippActivator.getDynamicTabBreakages();
+      dynamicTab = Array.isArray(dynT) ? dynT : [];
+    } catch (_) {
+      console.warn("Unable to retrieve dynamicTabBreakages");
+    }
+
+    let dynamicWr = [];
+    try {
+      const dynW = await browser.ippActivator.getDynamicWebRequestBreakages();
+      dynamicWr = Array.isArray(dynW) ? dynW : [];
+    } catch (_) {
+      console.warn("Unable to retrieve dynamicWebRequestBreakages");
+    }
+
+    this.#tabBreakages = [...(this.#tabBaseBreakages || []), ...dynamicTab];
+    this.#webrequestBreakages = [
+      ...(this.#webrequestBaseBreakages || []),
+      ...dynamicWr,
+    ];
   }
 
   async #tabUpdated(tabId, changeInfo, tab) {
@@ -94,56 +140,104 @@ class IPPAddonActivator {
       return;
     }
 
+    // If the tab URL changed, reset any pending web requests for this tab
+    if ("url" in changeInfo) {
+      this.#pendingWebRequests.delete(tabId);
+    }
+
     // If the tab is not active, defer handling until it becomes active
     if (!tab.active) {
       this.#pendingTabs.add(tabId);
       return;
     }
 
-    await this.#maybeNotify(tab);
+    await this.#maybeNotify(tab, this.#tabBreakages, tab.url);
   }
 
   async #tabActivated(activeInfo) {
     const { tabId } = activeInfo || {};
-    if (!this.#pendingTabs.has(tabId)) {
+
+    const hadTabPending = this.#pendingTabs.has(tabId);
+    const wrSet = this.#pendingWebRequests.get(tabId);
+    const pendingWrUrls = wrSet ? Array.from(wrSet) : [];
+    if (!hadTabPending && pendingWrUrls.length === 0) {
       return;
     }
+
     this.#pendingTabs.delete(tabId);
+    this.#pendingWebRequests.delete(tabId);
+
+    let tab;
     try {
-      const tab = await browser.tabs.get(tabId);
-      if (tab && tab.active) {
-        await this.#maybeNotify(tab);
+      tab = await browser.tabs.get(tabId);
+      if (!tab || !tab.active) {
+        return;
       }
     } catch (_) {
       // Tab might have been closed; ignore.
+      return;
+    }
+
+    if (
+      hadTabPending &&
+      (await this.#maybeNotify(tab, this.#tabBreakages, tab.url))
+    ) {
+      return;
+    }
+
+    for (const url of pendingWrUrls) {
+      if (await this.#maybeNotify(tab, this.#webrequestBreakages, url)) {
+        return;
+      }
     }
   }
 
-  async #maybeNotify(tab) {
-    const baseDomain = await browser.ippActivator.getBaseDomainFromURL(tab.url);
+  async #maybeNotify(tab, breakages, url) {
+    const baseDomain = await browser.ippActivator.getBaseDomainFromURL(url);
     if (!baseDomain) {
-      return;
+      return false;
     }
 
-    const breakage = this.#breakages.find(
+    const breakage = (breakages || []).find(
       (b) => Array.isArray(b.domains) && b.domains.includes(baseDomain),
     );
     if (!breakage) {
+      return false;
+    }
+
+    if (
+      !(await ConditionFactory.run(breakage.condition, { tabId: tab.id, url }))
+    ) {
+      return false;
+    }
+
+    await browser.ippActivator.showMessage(breakage.message);
+    return true;
+  }
+
+  async #onRequest(details) {
+    if (
+      typeof details.tabId !== "number" ||
+      details.tabId < 0 ||
+      !details.url
+    ) {
       return;
     }
 
-    if (!(await ConditionFactory.run(breakage.condition))) {
-      return;
-    }
+    try {
+      const tab = await browser.tabs.get(details.tabId);
+      if (!tab) return;
 
-    const answer = await browser.ippActivator.showMessage(breakage.message);
-    switch (answer) {
-      case "closed":
-        break;
+      if (tab.active) {
+        await this.#maybeNotify(tab, this.#webrequestBreakages, details.url);
+      } else {
+        const set = this.#pendingWebRequests.get(details.tabId) || new Set();
+        set.add(details.url);
 
-      default:
-        console.warn("Unexpected result:", answer);
-        break;
+        this.#pendingWebRequests.set(details.tabId, set);
+      }
+    } catch (_) {
+      // tab may not exist
     }
   }
 }

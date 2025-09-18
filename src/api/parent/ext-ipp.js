@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* global ExtensionAPI, ExtensionCommon */
+/* global ExtensionAPI, ExtensionCommon, Cr */
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
@@ -10,7 +10,10 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource:///modules/ipprotection/IPProtectionService.sys.mjs",
 });
 
-const PREF_DYNAMIC_BREAKAGES = "extensions.ippactivator.dynamicBreakages";
+const PREF_DYNAMIC_TAB_BREAKAGES =
+  "extensions.ippactivator.dynamicTabBreakages";
+const PREF_DYNAMIC_WEBREQUEST_BREAKAGES =
+  "extensions.ippactivator.dynamicWebRequestBreakages";
 
 this.ippActivator = class extends ExtensionAPI {
   onStartup() {}
@@ -47,17 +50,26 @@ this.ippActivator = class extends ExtensionAPI {
         isIPPActive() {
           return lazy.IPProtectionService.isActive;
         },
-        getDynamicBreakages() {
+        getDynamicTabBreakages() {
           try {
             const json = Services.prefs.getStringPref(
-              PREF_DYNAMIC_BREAKAGES,
+              PREF_DYNAMIC_TAB_BREAKAGES,
               "[]",
             );
             const arr = JSON.parse(json);
-            if (!Array.isArray(arr)) {
-              return [];
-            }
-            return arr;
+            return Array.isArray(arr) ? arr : [];
+          } catch (_) {
+            return [];
+          }
+        },
+        getDynamicWebRequestBreakages() {
+          try {
+            const json = Services.prefs.getStringPref(
+              PREF_DYNAMIC_WEBREQUEST_BREAKAGES,
+              "[]",
+            );
+            const arr = JSON.parse(json);
+            return Array.isArray(arr) ? arr : [];
           } catch (_) {
             return [];
           }
@@ -68,98 +80,101 @@ this.ippActivator = class extends ExtensionAPI {
             if (!host) {
               return "";
             }
-            return Services.eTLD.getBaseDomainFromHost(host);
-          } catch (e) {
+            try {
+              return Services.eTLD.getBaseDomainFromHost(host);
+            } catch (e) {
+              if (e.result === Cr.NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS) {
+                return host;
+              }
+              return "";
+            }
+          } catch (_) {
             return "";
           }
         },
-        async showMessage(message) {
-          return new Promise((resolve) => {
-            try {
-              const win = Services.wm.getMostRecentWindow("navigator:browser");
-              if (!win || !win.gBrowser) {
-                resolve("closed");
-                return;
-              }
-
-              const nbox = win.gBrowser.getNotificationBox();
-              const id = "ipp-activator-notification";
-
-              const existing = nbox.getNotificationWithValue?.(id);
-              if (existing) {
-                nbox.removeNotification(existing);
-              }
-
-              let settled = false;
-              const done = (result) => {
-                if (settled) {
-                  return;
-                }
-                settled = true;
-                try {
-                  const cur = nbox.getNotificationWithValue?.(id);
-                  if (cur) {
-                    nbox.removeNotification(cur);
-                  }
-                } catch (e) {
-                  console.warn("Unable to remove previous notifications", e);
-                }
-                resolve(result);
-              };
-
-              const buildLabel = (msg) => {
-                // Accept either string or array of parts {text, modifier}
-                if (Array.isArray(msg)) {
-                  const frag = win.document.createDocumentFragment();
-                  for (const part of msg) {
-                    const text = String(part?.text ?? "");
-                    const mods = Array.isArray(part?.modifier)
-                      ? part.modifier
-                      : [];
-                    if (mods.includes("strong")) {
-                      const strong = win.document.createElement("strong");
-                      strong.textContent = text;
-                      frag.append(strong);
-                    } else {
-                      frag.append(win.document.createTextNode(text));
-                    }
-                  }
-                  return frag;
-                }
-                return String(msg ?? "");
-              };
-
-              const label = buildLabel(message);
-
-              nbox.appendNotification(
-                id,
-                {
-                  // If label is a string, pass it through; if it's a Node, the
-                  // notification box will handle it as rich content.
-                  label,
-                  priority: nbox.PRIORITY_WARNING_HIGH,
-                  eventCallback: (event) => {
-                    if (event === "dismissed") {
-                      done("closed");
-                    }
-                  },
-                },
-                [],
-              );
-            } catch (e) {
-              console.warn("Unable to show the message", e);
-              resolve("closed");
+        showMessage(message) {
+          try {
+            const win = Services.wm.getMostRecentWindow("navigator:browser");
+            if (!win || !win.gBrowser) {
+              return;
             }
-          });
+
+            const nbox = win.gBrowser.getNotificationBox();
+            const id = "ipp-activator-notification";
+
+            const existing = nbox.getNotificationWithValue?.(id);
+            if (existing) {
+              nbox.removeNotification(existing);
+            }
+
+            const buildLabel = (msg) => {
+              // Accept either string or array of parts {text, modifier}
+              if (Array.isArray(msg)) {
+                const frag = win.document.createDocumentFragment();
+                for (const part of msg) {
+                  const text = String(part?.text ?? "");
+                  const mods = Array.isArray(part?.modifier)
+                    ? part.modifier
+                    : [];
+                  if (mods.includes("strong")) {
+                    const strong = win.document.createElement("strong");
+                    strong.textContent = text;
+                    frag.append(strong);
+                  } else {
+                    frag.append(win.document.createTextNode(text));
+                  }
+                }
+                return frag;
+              }
+              return String(msg ?? "");
+            };
+
+            const label = buildLabel(message);
+
+            nbox.appendNotification(
+              id,
+              {
+                // If label is a string, pass it through; if it's a Node, the
+                // notification box will handle it as rich content.
+                label,
+                priority: nbox.PRIORITY_WARNING_HIGH,
+              },
+              [],
+            );
+          } catch (e) {
+            console.warn("Unable to show the message", e);
+          }
         },
-        onDynamicBreakagesUpdated: new ExtensionCommon.EventManager({
+        onDynamicTabBreakagesUpdated: new ExtensionCommon.EventManager({
           context,
-          name: "ippActivator.onDynamicBreakagesUpdated",
+          name: "ippActivator.onDynamicTabBreakagesUpdated",
           register: (fire) => {
             const branch = Services.prefs.getBranch("extensions.ippactivator.");
             const observer = {
               observe(subject, topic, data) {
-                if (topic === "nsPref:changed" && data === "dynamicBreakages") {
+                if (
+                  topic === "nsPref:changed" &&
+                  data === "dynamicTabBreakages"
+                ) {
+                  fire.async({});
+                }
+              },
+            };
+            branch.addObserver("", observer);
+            return () => branch.removeObserver("", observer);
+          },
+        }).api(),
+        onDynamicWebRequestBreakagesUpdated: new ExtensionCommon.EventManager({
+          context,
+          name: "ippActivator.onDynamicWebRequestBreakagesUpdated",
+          register: (fire) => {
+            const branch = Services.prefs.getBranch("extensions.ippactivator.");
+            const observer = {
+              observe(subject, topic, data) {
+                if (
+                  topic === "nsPref:changed" &&
+                  data === "dynamicWebRequestBreakages"
+                ) {
                   fire.async({});
                 }
               },

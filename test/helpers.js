@@ -14,7 +14,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const NOTIFICATION_ID = "ipp-activator-notification";
-const DYNAMIC_BREAKAGES_PREF = "extensions.ippactivator.dynamicBreakages";
+const DYNAMIC_TAB_BREAKAGES_PREF =
+  "extensions.ippactivator.dynamicTabBreakages";
+const DYNAMIC_WEBREQUEST_BREAKAGES_PREF =
+  "extensions.ippactivator.dynamicWebRequestBreakages";
 
 async function buildXpiIfMissing() {
   const ADDON_XPI_PATH = path.join(
@@ -139,7 +142,7 @@ async function waitNotificationGone(driver, timeoutMs = 10000) {
   );
 }
 
-async function setDynamicBreakages(driver, breakages) {
+async function setDynamicTabBreakages(driver, breakages) {
   await setChromeContext(driver);
   return driver.executeScript(
     (prefName, arr) => {
@@ -152,25 +155,52 @@ async function setDynamicBreakages(driver, breakages) {
         return false;
       }
     },
-    DYNAMIC_BREAKAGES_PREF,
+    DYNAMIC_TAB_BREAKAGES_PREF,
+    breakages,
+  );
+}
+
+async function setDynamicWebRequestBreakages(driver, breakages) {
+  await setChromeContext(driver);
+  return driver.executeScript(
+    (prefName, arr) => {
+      try {
+        const json = JSON.stringify(arr || []);
+        // eslint-disable-next-line no-undef
+        Services.prefs.setStringPref(prefName, json);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+    DYNAMIC_WEBREQUEST_BREAKAGES_PREF,
     breakages,
   );
 }
 
 async function clearDynamicBreakages(driver) {
   await setChromeContext(driver);
-  return driver.executeScript((prefName) => {
-    try {
-      // eslint-disable-next-line no-undef
-      if (Services.prefs.prefHasUserValue(prefName)) {
+  return driver.executeScript(
+    (tabPref, wrPref) => {
+      try {
         // eslint-disable-next-line no-undef
-        Services.prefs.clearUserPref(prefName);
+        if (Services.prefs.prefHasUserValue(tabPref)) {
+          // eslint-disable-next-line no-undef
+          Services.prefs.clearUserPref(tabPref);
+        }
+        // eslint-disable-next-line no-undef
+        if (Services.prefs.prefHasUserValue(wrPref)) {
+          // eslint-disable-next-line no-undef
+          Services.prefs.clearUserPref(wrPref);
+        }
+        return true;
+      } catch (_) {
+        return false;
       }
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }, DYNAMIC_BREAKAGES_PREF);
+    },
+    DYNAMIC_TAB_BREAKAGES_PREF,
+    DYNAMIC_WEBREQUEST_BREAKAGES_PREF,
+  );
 }
 
 export {
@@ -182,6 +212,7 @@ export {
   notificationExists,
   dismissNotification,
   waitNotificationGone,
-  setDynamicBreakages,
+  setDynamicTabBreakages,
+  setDynamicWebRequestBreakages,
   clearDynamicBreakages,
 };

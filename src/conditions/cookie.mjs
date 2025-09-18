@@ -45,13 +45,13 @@ class ConditionCookie extends ConditionBase {
       return false;
     }
 
-    if (typeof this.desc.value === 'string' && c.value !== this.desc.value) {
+    if (typeof this.desc.value === 'string' && cookie.value !== this.desc.value) {
       return false;
     }
 
     if (
       typeof this.desc.value_contain === 'string' &&
-      (typeof c.value !== 'string' || !c.value.includes(this.desc.value_contain))
+      (typeof cookie.value !== 'string' || !cookie.value.includes(this.desc.value_contain))
     ) {
       return false;
     }

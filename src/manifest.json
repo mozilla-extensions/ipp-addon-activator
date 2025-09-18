@@ -1,11 +1,10 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "IPP Activator",
   "version": "0.1",
   "description": "A system add-on to activate IPP in 143",
-  "permissions": ["tabs", "cookies"],
-  "host_permissions": ["<all_urls>"],
-  "browser_specific_settings": {
+  "permissions": ["tabs", "cookies", "<all_urls>"],
+  "applications": {
     "gecko": {
       "id": "ipp-activator@mozilla.com",
       "strict_min_version": "143.0"
@@ -13,7 +12,8 @@
   },
   "background": {
     "scripts": ["bg.mjs"],
-    "type": "module"
+    "type": "module",
+    "persistent": true
   },
   "experiment_apis": {
     "ippActivator": {

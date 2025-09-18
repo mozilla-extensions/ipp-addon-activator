@@ -13,7 +13,7 @@ class ConditionBase {
   }
 
   check() {
-    throw new Error('Check is not implemented!');
+    throw new Error("Check is not implemented!");
   }
 }
 

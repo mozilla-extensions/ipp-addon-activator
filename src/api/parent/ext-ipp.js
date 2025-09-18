@@ -23,7 +23,7 @@ this.ippActivator = class extends ExtensionAPI {
         onIPPActivated: new ExtensionCommon.EventManager({
           context,
           name: "ippActivator.onIPPActivated",
-          register: fire => {
+          register: (fire) => {
             const topic = "IPProtectionService:Started";
             const observer = {
               observe(subject, t, _data) {
@@ -41,7 +41,7 @@ this.ippActivator = class extends ExtensionAPI {
         isTesting() {
           return Services.prefs.getBoolPref(
             "extensions.ippactivator.testMode",
-            false
+            false,
           );
         },
         isIPPActive() {
@@ -51,7 +51,7 @@ this.ippActivator = class extends ExtensionAPI {
           try {
             const json = Services.prefs.getStringPref(
               PREF_DYNAMIC_BREAKAGES,
-              "[]"
+              "[]",
             );
             const arr = JSON.parse(json);
             if (!Array.isArray(arr)) {
@@ -74,7 +74,7 @@ this.ippActivator = class extends ExtensionAPI {
           }
         },
         async showMessage(message) {
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             try {
               const win = Services.wm.getMostRecentWindow("navigator:browser");
               if (!win || !win.gBrowser) {
@@ -91,7 +91,7 @@ this.ippActivator = class extends ExtensionAPI {
               }
 
               let settled = false;
-              const done = result => {
+              const done = (result) => {
                 if (settled) {
                   return;
                 }
@@ -107,7 +107,7 @@ this.ippActivator = class extends ExtensionAPI {
                 resolve(result);
               };
 
-              const buildLabel = msg => {
+              const buildLabel = (msg) => {
                 // Accept either string or array of parts {text, modifier}
                 if (Array.isArray(msg)) {
                   const frag = win.document.createDocumentFragment();
@@ -138,13 +138,13 @@ this.ippActivator = class extends ExtensionAPI {
                   // notification box will handle it as rich content.
                   label,
                   priority: nbox.PRIORITY_WARNING_HIGH,
-                  eventCallback: event => {
+                  eventCallback: (event) => {
                     if (event === "dismissed") {
                       done("closed");
                     }
                   },
                 },
-                []
+                [],
               );
             } catch (e) {
               console.warn("Unable to show the message", e);
@@ -155,7 +155,7 @@ this.ippActivator = class extends ExtensionAPI {
         onDynamicBreakagesUpdated: new ExtensionCommon.EventManager({
           context,
           name: "ippActivator.onDynamicBreakagesUpdated",
-          register: fire => {
+          register: (fire) => {
             const branch = Services.prefs.getBranch("extensions.ippactivator.");
             const observer = {
               observe(subject, topic, data) {

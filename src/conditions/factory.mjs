@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import ConditionAnd from './and.mjs';
-import ConditionOr from './or.mjs';
-import ConditionTest from './test.mjs';
-import ConditionCookie from './cookie.mjs';
-import ConditionNot from './not.mjs';
+import ConditionAnd from "./and.mjs";
+import ConditionOr from "./or.mjs";
+import ConditionTest from "./test.mjs";
+import ConditionCookie from "./cookie.mjs";
+import ConditionNot from "./not.mjs";
 
 const CONDITIONS_MAP = {
   and: ConditionAnd,
@@ -36,7 +36,7 @@ export class ConditionFactory {
   create(conditionDesc) {
     const conditionClass = CONDITIONS_MAP[conditionDesc.type];
     if (!conditionClass) {
-      throw new Error('Unknown condition type: ' + String(conditionDesc?.type));
+      throw new Error("Unknown condition type: " + String(conditionDesc?.type));
     }
     return new conditionClass(this, conditionDesc);
   }

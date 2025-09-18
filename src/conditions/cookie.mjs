@@ -4,10 +4,10 @@
 
 /* global browser */
 
-import ConditionBase from './base.mjs';
+import ConditionBase from "./base.mjs";
 
 class ConditionCookie extends ConditionBase {
-  static STORAGE_KEY = 'cookies-';
+  static STORAGE_KEY = "cookies-";
 
   constructor(factory, desc) {
     super(factory, desc);
@@ -39,19 +39,26 @@ class ConditionCookie extends ConditionBase {
       return false;
     }
 
-    const cookies = this.factory.retrieveData(ConditionCookie.STORAGE_KEY + this.desc.domain) || [];
+    const cookies =
+      this.factory.retrieveData(
+        ConditionCookie.STORAGE_KEY + this.desc.domain,
+      ) || [];
     const cookie = cookies.find((c) => c && c.name === this.desc.name);
     if (!cookie) {
       return false;
     }
 
-    if (typeof this.desc.value === 'string' && cookie.value !== this.desc.value) {
+    if (
+      typeof this.desc.value === "string" &&
+      cookie.value !== this.desc.value
+    ) {
       return false;
     }
 
     if (
-      typeof this.desc.value_contain === 'string' &&
-      (typeof cookie.value !== 'string' || !cookie.value.includes(this.desc.value_contain))
+      typeof this.desc.value_contain === "string" &&
+      (typeof cookie.value !== "string" ||
+        !cookie.value.includes(this.desc.value_contain))
     ) {
       return false;
     }

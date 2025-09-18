@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { expect } from 'chai';
+import { expect } from "chai";
 
 import {
   buildXpiIfMissing,
@@ -12,13 +12,13 @@ import {
   dismissNotification,
   setDynamicBreakages,
   clearDynamicBreakages,
-} from './helpers.js';
+} from "./helpers.js";
 
-describe('Condition: cookie', function () {
+describe("Condition: cookie", function () {
   this.timeout(120_000);
 
   let driver;
-  const testUrl = 'https://www.example.com/';
+  const testUrl = "https://www.example.com/";
 
   async function setCookie(name, value) {
     await setContentContext(driver);
@@ -66,12 +66,16 @@ describe('Condition: cookie', function () {
     }
   });
 
-  it('does not show when cookie is missing; shows when present', async () => {
+  it("does not show when cookie is missing; shows when present", async () => {
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com'],
-        message: 'Cookie basic condition matched',
-        condition: { type: 'cookie', domain: 'www.example.com', name: 'ipp_test' },
+        domains: ["example.com"],
+        message: "Cookie basic condition matched",
+        condition: {
+          type: "cookie",
+          domain: "www.example.com",
+          name: "ipp_test",
+        },
       },
     ]);
 
@@ -86,28 +90,31 @@ describe('Condition: cookie', function () {
     } catch (_) {
       appeared = false; // timeout expected
     }
-    expect(appeared).to.equal(false, 'no notification without cookie');
+    expect(appeared).to.equal(false, "no notification without cookie");
 
     // Set cookie and reload: notification expected
-    await setCookie('ipp_test', 'hello');
+    await setCookie("ipp_test", "hello");
     await setContentContext(driver);
     await driver.navigate().refresh();
     const appearedAfter = await waitForNotification(driver, 15000);
-    expect(appearedAfter).to.equal(true, 'notification should appear when cookie exists');
+    expect(appearedAfter).to.equal(
+      true,
+      "notification should appear when cookie exists",
+    );
     await dismissNotification(driver);
   });
 
-  it('matches exact value when value is specified', async () => {
-    await clearCookie('ipp_value');
+  it("matches exact value when value is specified", async () => {
+    await clearCookie("ipp_value");
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com'],
-        message: 'Cookie value match',
+        domains: ["example.com"],
+        message: "Cookie value match",
         condition: {
-          type: 'cookie',
-          domain: 'www.example.com',
-          name: 'ipp_value',
-          value: 'abc123',
+          type: "cookie",
+          domain: "www.example.com",
+          name: "ipp_value",
+          value: "abc123",
         },
       },
     ]);
@@ -115,7 +122,7 @@ describe('Condition: cookie', function () {
     // Wrong value -> no notification
     await setContentContext(driver);
     await driver.get(testUrl);
-    await setCookie('ipp_value', 'wrong');
+    await setCookie("ipp_value", "wrong");
     await setContentContext(driver);
     await driver.navigate().refresh();
     let exists = true;
@@ -125,28 +132,31 @@ describe('Condition: cookie', function () {
     } catch (_) {
       exists = false;
     }
-    expect(exists).to.equal(false, 'no notification when value mismatches');
+    expect(exists).to.equal(false, "no notification when value mismatches");
 
     // Correct value -> notification
-    await setCookie('ipp_value', 'abc123');
+    await setCookie("ipp_value", "abc123");
     await setContentContext(driver);
     await driver.navigate().refresh();
     const appeared = await waitForNotification(driver, 15000);
-    expect(appeared).to.equal(true, 'notification should appear with exact value');
+    expect(appeared).to.equal(
+      true,
+      "notification should appear with exact value",
+    );
     await dismissNotification(driver);
   });
 
-  it('matches substring when value_contain is specified', async () => {
-    await clearCookie('ipp_contains');
+  it("matches substring when value_contain is specified", async () => {
+    await clearCookie("ipp_contains");
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com'],
-        message: 'Cookie contains match',
+        domains: ["example.com"],
+        message: "Cookie contains match",
         condition: {
-          type: 'cookie',
-          domain: 'www.example.com',
-          name: 'ipp_contains',
-          value_contain: 'XYZ',
+          type: "cookie",
+          domain: "www.example.com",
+          name: "ipp_contains",
+          value_contain: "XYZ",
         },
       },
     ]);
@@ -154,7 +164,7 @@ describe('Condition: cookie', function () {
     // Value without substring -> no notification
     await setContentContext(driver);
     await driver.get(testUrl);
-    await setCookie('ipp_contains', 'abc');
+    await setCookie("ipp_contains", "abc");
     await setContentContext(driver);
     await driver.navigate().refresh();
     let exists = true;
@@ -164,14 +174,17 @@ describe('Condition: cookie', function () {
     } catch (_) {
       exists = false;
     }
-    expect(exists).to.equal(false, 'no notification when substring missing');
+    expect(exists).to.equal(false, "no notification when substring missing");
 
     // Value with substring -> notification
-    await setCookie('ipp_contains', '123XYZ456');
+    await setCookie("ipp_contains", "123XYZ456");
     await setContentContext(driver);
     await driver.navigate().refresh();
     const appeared = await waitForNotification(driver, 15000);
-    expect(appeared).to.equal(true, 'notification should appear when substring matched');
+    expect(appeared).to.equal(
+      true,
+      "notification should appear when substring matched",
+    );
     await dismissNotification(driver);
   });
 });

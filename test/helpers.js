@@ -3,27 +3,31 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* eslint-disable no-console */
-import path from 'node:path';
-import fs from 'node:fs';
-import { spawnSync } from 'node:child_process';
-import { Builder } from 'selenium-webdriver';
-import firefox from 'selenium-webdriver/firefox.js';
-import { fileURLToPath } from 'node:url';
+import path from "node:path";
+import fs from "node:fs";
+import { spawnSync } from "node:child_process";
+import { Builder } from "selenium-webdriver";
+import firefox from "selenium-webdriver/firefox.js";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const NOTIFICATION_ID = 'ipp-activator-notification';
-const DYNAMIC_BREAKAGES_PREF = 'extensions.ippactivator.dynamicBreakages';
+const NOTIFICATION_ID = "ipp-activator-notification";
+const DYNAMIC_BREAKAGES_PREF = "extensions.ippactivator.dynamicBreakages";
 
 async function buildXpiIfMissing() {
-  const ADDON_XPI_PATH = path.join(__dirname, '../web-ext-artifacts/ipp-addon-activator.xpi');
+  const ADDON_XPI_PATH = path.join(
+    __dirname,
+    "../web-ext-artifacts/ipp-addon-activator.xpi",
+  );
 
   if (fs.existsSync(ADDON_XPI_PATH)) return ADDON_XPI_PATH;
-  console.log('Building XPI...');
-  const res = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
-  if (res.status !== 0) throw new Error('Build failed');
-  if (!fs.existsSync(ADDON_XPI_PATH)) throw new Error('XPI not found after build');
+  console.log("Building XPI...");
+  const res = spawnSync("npm", ["run", "build"], { stdio: "inherit" });
+  if (res.status !== 0) throw new Error("Build failed");
+  if (!fs.existsSync(ADDON_XPI_PATH))
+    throw new Error("XPI not found after build");
   return ADDON_XPI_PATH;
 }
 
@@ -31,28 +35,40 @@ async function createDriver() {
   const fxBinary = process.env.FIREFOX_BINARY || undefined;
   const options = new firefox.Options();
   if (fxBinary) options.setBinary(fxBinary);
-  options.addArguments('-remote-allow-system-access');
-  options.setPreference('extensions.experiments.enabled', true);
-  options.setPreference('extensions.ippactivator.testMode', true);
-  options.setPreference('toolkit.cosmeticAnimations.enabled', false);
-  options.setPreference('datareporting.policy.dataSubmissionPolicyBypassNotification', true);
-  return await new Builder().forBrowser('firefox').setFirefoxOptions(options).build();
+  options.addArguments("-remote-allow-system-access");
+  options.setPreference("extensions.experiments.enabled", true);
+  options.setPreference("extensions.ippactivator.testMode", true);
+  options.setPreference("toolkit.cosmeticAnimations.enabled", false);
+  options.setPreference(
+    "datareporting.policy.dataSubmissionPolicyBypassNotification",
+    true,
+  );
+  return await new Builder()
+    .forBrowser("firefox")
+    .setFirefoxOptions(options)
+    .build();
 }
 
 async function defineMozContext(driver) {
-  const { Command } = await import('selenium-webdriver/lib/command.js');
-  driver.getExecutor().defineCommand('mozSetContext', 'POST', '/session/:sessionId/moz/context');
+  const { Command } = await import("selenium-webdriver/lib/command.js");
+  driver
+    .getExecutor()
+    .defineCommand("mozSetContext", "POST", "/session/:sessionId/moz/context");
   return { Command };
 }
 
 async function setChromeContext(driver) {
   const { Command } = await defineMozContext(driver);
-  await driver.execute(new Command('mozSetContext').setParameter('context', 'chrome'));
+  await driver.execute(
+    new Command("mozSetContext").setParameter("context", "chrome"),
+  );
 }
 
 async function setContentContext(driver) {
   const { Command } = await defineMozContext(driver);
-  await driver.execute(new Command('mozSetContext').setParameter('context', 'content'));
+  await driver.execute(
+    new Command("mozSetContext").setParameter("context", "content"),
+  );
 }
 
 async function waitForNotification(driver, timeoutMs = 30000) {
@@ -97,10 +113,10 @@ async function dismissNotification(driver) {
         'button[aria-label="Close"], button[aria-label="Dismiss"], .close-icon',
       );
       if (!closeBtn) {
-        closeBtn = Array.from(n.querySelectorAll('button')).find((b) =>
-          Array.from(b.querySelectorAll('label'))
-            .map((l) => l.value || l.textContent || '')
-            .some((v) => v.trim().toLowerCase() === 'close'),
+        closeBtn = Array.from(n.querySelectorAll("button")).find((b) =>
+          Array.from(b.querySelectorAll("label"))
+            .map((l) => l.value || l.textContent || "")
+            .some((v) => v.trim().toLowerCase() === "close"),
         );
       }
       if (closeBtn) {
@@ -117,7 +133,10 @@ async function dismissNotification(driver) {
 
 async function waitNotificationGone(driver, timeoutMs = 10000) {
   await setChromeContext(driver);
-  return driver.wait(async () => !(await notificationExists(driver)), timeoutMs);
+  return driver.wait(
+    async () => !(await notificationExists(driver)),
+    timeoutMs,
+  );
 }
 
 async function setDynamicBreakages(driver, breakages) {

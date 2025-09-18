@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { expect } from 'chai';
+import { expect } from "chai";
 
 import {
   buildXpiIfMissing,
@@ -14,13 +14,13 @@ import {
   dismissNotification,
   setDynamicBreakages,
   clearDynamicBreakages,
-} from './helpers.js';
+} from "./helpers.js";
 
-describe('Notifications only on active tab', function () {
+describe("Notifications only on active tab", function () {
   this.timeout(120_000);
 
   let driver;
-  const testUrl = 'https://www.example.com/';
+  const testUrl = "https://www.example.com/";
 
   before(async () => {
     const xpiPath = await buildXpiIfMissing();
@@ -30,10 +30,10 @@ describe('Notifications only on active tab', function () {
     // Inject a breakage for example.com that always matches
     await setDynamicBreakages(driver, [
       {
-        domains: ['example.com'],
+        domains: ["example.com"],
         message:
-          'Firefox VPN could break Example video playback. Click here to disable Firefox VPN for this domain.',
-        condition: { type: 'test', ret: true },
+          "Firefox VPN could break Example video playback. Click here to disable Firefox VPN for this domain.",
+        condition: { type: "test", ret: true },
       },
     ]);
   });
@@ -57,7 +57,10 @@ describe('Notifications only on active tab', function () {
         const { gBrowser } = window;
         // eslint-disable-next-line no-undef
         const sp = Services.scriptSecurityManager.getSystemPrincipal();
-        const tab = gBrowser.addTab(u, { triggeringPrincipal: sp, selected: false });
+        const tab = gBrowser.addTab(u, {
+          triggeringPrincipal: sp,
+          selected: false,
+        });
         return !!tab;
       } catch (_) {
         return false;
@@ -73,7 +76,7 @@ describe('Notifications only on active tab', function () {
         const { gBrowser } = window;
         const tabs = gBrowser.tabs;
         for (const tab of tabs) {
-          const uri = tab.linkedBrowser?.currentURI?.asciiSpec || '';
+          const uri = tab.linkedBrowser?.currentURI?.asciiSpec || "";
           if (uri.startsWith(prefix)) {
             gBrowser.selectedTab = tab;
             return true;
@@ -86,28 +89,31 @@ describe('Notifications only on active tab', function () {
     }, urlPrefix);
   }
 
-  it('defers notification until the tab becomes active', async () => {
+  it("defers notification until the tab becomes active", async () => {
     // Keep focus on a neutral tab first
     await setContentContext(driver);
-    await driver.get('about:blank');
+    await driver.get("about:blank");
 
     // Open example.com in background (inactive) tab
     const opened = await openBackgroundTab(testUrl);
-    expect(opened).to.equal(true, 'should open background tab');
+    expect(opened).to.equal(true, "should open background tab");
 
     // Give the background tab a moment to start loading and trigger listeners
     await driver.sleep(1000);
 
     // While inactive, we should NOT see any notification
     const existsWhileInactive = await notificationExists(driver);
-    expect(existsWhileInactive).to.equal(false, 'no notification while tab inactive');
+    expect(existsWhileInactive).to.equal(
+      false,
+      "no notification while tab inactive",
+    );
 
     // Activate the example.com tab -> notification should appear
     const activated = await activateTabByUrl(testUrl);
-    expect(activated).to.equal(true, 'should activate example.com tab');
+    expect(activated).to.equal(true, "should activate example.com tab");
 
     const appeared = await waitForNotification(driver, 20000);
-    expect(appeared).to.equal(true, 'notification appears on activation');
+    expect(appeared).to.equal(true, "notification appears on activation");
 
     await dismissNotification(driver);
   });

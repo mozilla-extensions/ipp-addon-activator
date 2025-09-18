@@ -4,7 +4,7 @@
 
 /* global browser */
 
-import { ConditionFactory } from './conditions/factory.mjs';
+import { ConditionFactory } from "./conditions/factory.mjs";
 
 class IPPAddonActivator {
   #breakages;
@@ -28,11 +28,9 @@ class IPPAddonActivator {
       }
 
       // Initialize only when IPP is active, keep in sync with activation.
-      browser.ippActivator.isIPPActive().then((enabled) => {
-        if (enabled) {
-          this.#init();
-        }
-      });
+      if (await browser.ippActivator.isIPPActive()) {
+        this.#init();
+      }
 
       // IPP start event: initialize when service starts.
       browser.ippActivator.onIPPActivated.addListener((enabled) => {
@@ -51,7 +49,7 @@ class IPPAddonActivator {
     }
     // React on URL changes and reloads (status: 'loading')
     browser.tabs.onUpdated.addListener(this.tabUpdated, {
-      properties: ['url', 'status'],
+      properties: ["url", "status"],
     });
     // Track when a tab becomes active to show deferred notifications
     browser.tabs.onActivated.addListener(this.tabActivated);
@@ -70,7 +68,7 @@ class IPPAddonActivator {
   async #loadAndRebuildBreakages() {
     if (!this.#baseBreakages) {
       try {
-        const url = browser.runtime.getURL('breakages/base.json');
+        const url = browser.runtime.getURL("breakages/base.json");
         const res = await fetch(url);
         const base = await res.json();
         this.#baseBreakages = Array.isArray(base) ? base : [];
@@ -84,7 +82,7 @@ class IPPAddonActivator {
       const dyn = await browser.ippActivator.getDynamicBreakages();
       dynamicBreakages = Array.isArray(dyn) ? dyn : [];
     } catch (_) {
-      console.warn('Unable to retrieve the dynamic breakages');
+      console.warn("Unable to retrieve the dynamic breakages");
     }
 
     this.#breakages = [...this.#baseBreakages, ...dynamicBreakages];
@@ -92,7 +90,7 @@ class IPPAddonActivator {
 
   async #tabUpdated(tabId, changeInfo, tab) {
     // Only act when the URL changes or a reload starts
-    if (!('url' in changeInfo) && changeInfo.status !== 'loading') {
+    if (!("url" in changeInfo) && changeInfo.status !== "loading") {
       return;
     }
 
@@ -140,11 +138,11 @@ class IPPAddonActivator {
 
     const answer = await browser.ippActivator.showMessage(breakage.message);
     switch (answer) {
-      case 'closed':
+      case "closed":
         break;
 
       default:
-        console.warn('Unexpected result:', answer);
+        console.warn("Unexpected result:", answer);
         break;
     }
   }

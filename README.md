@@ -98,7 +98,10 @@ Notes:
   - String example: `"Simple message"`.
   - Array example:
     ```json
-    [{ "text": "Important: ", "modifier": ["strong"] }, { "text": "additional details." }]
+    [
+      { "text": "Important: ", "modifier": ["strong"] },
+      { "text": "additional details." }
+    ]
     ```
     Supported modifiers: `strong`.
 - `condition` (optional): a Condition object that controls when to show the notification. If omitted, the rule always matches when the domain matches.
@@ -178,10 +181,20 @@ Supported types
     { "type": "cookie", "domain": "example.com", "name": "sessionid" }
     ```
     ```json
-    { "type": "cookie", "domain": "example.com", "name": "sessionid", "value": "abc123" }
+    {
+      "type": "cookie",
+      "domain": "example.com",
+      "name": "sessionid",
+      "value": "abc123"
+    }
     ```
     ```json
-    { "type": "cookie", "domain": "example.com", "name": "sessionid", "value_contain": "abc" }
+    {
+      "type": "cookie",
+      "domain": "example.com",
+      "name": "sessionid",
+      "value_contain": "abc"
+    }
     ```
 
 Composing conditions
@@ -196,7 +209,12 @@ Composing conditions
       {
         "type": "or",
         "conditions": [
-          { "type": "cookie", "domain": "example.com", "name": "flags", "value_contain": "beta" },
+          {
+            "type": "cookie",
+            "domain": "example.com",
+            "name": "flags",
+            "value_contain": "beta"
+          },
           { "type": "test", "ret": true }
         ]
       }
@@ -211,7 +229,11 @@ Composing conditions
     "conditions": [
       {
         "type": "not",
-        "condition": { "type": "cookie", "domain": "example.com", "name": "opt_out" }
+        "condition": {
+          "type": "cookie",
+          "domain": "example.com",
+          "name": "opt_out"
+        }
       },
       { "type": "cookie", "domain": "example.com", "name": "session" }
     ]

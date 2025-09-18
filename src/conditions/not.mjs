@@ -29,4 +29,3 @@ class ConditionNot extends ConditionBase {
 }
 
 export default ConditionNot;
-

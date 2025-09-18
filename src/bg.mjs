@@ -10,9 +10,11 @@ class IPPAddonActivator {
   #breakages;
   #baseBreakages;
   #initialized = false;
+  #pendingTabs = new Set();
 
   constructor() {
     this.tabUpdated = this.#tabUpdated.bind(this);
+    this.tabActivated = this.#tabActivated.bind(this);
 
     browser.ippActivator.isTesting().then(async (isTesting) => {
       await this.#loadAndRebuildBreakages();
@@ -51,6 +53,8 @@ class IPPAddonActivator {
     browser.tabs.onUpdated.addListener(this.tabUpdated, {
       properties: ['url', 'status'],
     });
+    // Track when a tab becomes active to show deferred notifications
+    browser.tabs.onActivated.addListener(this.tabActivated);
     this.#initialized = true;
   }
 
@@ -59,6 +63,7 @@ class IPPAddonActivator {
       return;
     }
     browser.tabs.onUpdated.removeListener(this.tabUpdated);
+    browser.tabs.onActivated.removeListener(this.tabActivated);
     this.#initialized = false;
   }
 
@@ -91,6 +96,32 @@ class IPPAddonActivator {
       return;
     }
 
+    // If the tab is not active, defer handling until it becomes active
+    if (!tab.active) {
+      this.#pendingTabs.add(tabId);
+      return;
+    }
+
+    await this.#maybeNotify(tab);
+  }
+
+  async #tabActivated(activeInfo) {
+    const { tabId } = activeInfo || {};
+    if (!this.#pendingTabs.has(tabId)) {
+      return;
+    }
+    this.#pendingTabs.delete(tabId);
+    try {
+      const tab = await browser.tabs.get(tabId);
+      if (tab && tab.active) {
+        await this.#maybeNotify(tab);
+      }
+    } catch (_) {
+      // Tab might have been closed; ignore.
+    }
+  }
+
+  async #maybeNotify(tab) {
     const baseDomain = await browser.ippActivator.getBaseDomainFromURL(tab.url);
     if (!baseDomain) {
       return;

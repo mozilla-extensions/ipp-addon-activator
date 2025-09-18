@@ -1,0 +1,4 @@
+# Exclude CI/taskcluster config from formatting
+taskcluster/
+.taskcluster.yml
+.cron.yml

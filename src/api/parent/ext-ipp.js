@@ -5,7 +5,6 @@
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   IPProtectionService: 'resource:///modules/ipprotection/IPProtectionService.sys.mjs',
-  ExtensionCommon: 'resource://gre/modules/ExtensionCommon.sys.mjs',
 });
 
 const PREF_DYNAMIC_BREAKAGES = 'extensions.ippactivator.dynamicBreakages';
@@ -18,7 +17,7 @@ this.ippActivator = class extends ExtensionAPI {
   getAPI(context) {
     return {
       ippActivator: {
-        onIPPActivated: new lazy.ExtensionCommon.EventManager({
+        onIPPActivated: new ExtensionCommon.EventManager({
           context,
           name: 'ippActivator.onIPPActivated',
           register: (fire) => {
@@ -134,7 +133,7 @@ this.ippActivator = class extends ExtensionAPI {
             }
           });
         },
-        onDynamicBreakagesUpdated: new lazy.ExtensionCommon.EventManager({
+        onDynamicBreakagesUpdated: new ExtensionCommon.EventManager({
           context,
           name: 'ippActivator.onDynamicBreakagesUpdated',
           register: (fire) => {

@@ -187,6 +187,7 @@ Supported types
 Composing conditions
 
 - You can nest `and`/`or` with other conditions to express complex logic, e.g.:
+
   ```json
   {
     "type": "and",
@@ -208,7 +209,10 @@ Composing conditions
   {
     "type": "and",
     "conditions": [
-      { "type": "not", "condition": { "type": "cookie", "domain": "example.com", "name": "opt_out" } },
+      {
+        "type": "not",
+        "condition": { "type": "cookie", "domain": "example.com", "name": "opt_out" }
+      },
       { "type": "cookie", "domain": "example.com", "name": "session" }
     ]
   }

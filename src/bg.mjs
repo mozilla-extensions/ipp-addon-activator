@@ -135,8 +135,8 @@ class IPPAddonActivator {
   }
 
   async #tabUpdated(tabId, changeInfo, tab) {
-    // Only act when the URL changes or a reload starts
-    if (!("url" in changeInfo) && changeInfo.status !== "loading") {
+    // React only to URL changes and to load completion; avoid showing during 'loading'
+    if (!("url" in changeInfo) && changeInfo.status !== "complete") {
       return;
     }
 
@@ -145,7 +145,16 @@ class IPPAddonActivator {
       this.#pendingWebRequests.delete(tabId);
     }
 
-    // If the tab is not active, defer handling until it becomes active
+    // If we haven't reached load completion yet, wait for later events
+    if (changeInfo.status && changeInfo.status !== "complete") {
+      if (!tab.active) {
+        this.#pendingTabs.add(tabId);
+      }
+      return;
+    }
+
+    // At this point, either the URL changed and load already completed, or
+    // we received the 'complete' status: handle only if tab is active
     if (!tab.active) {
       this.#pendingTabs.add(tabId);
       return;
@@ -198,6 +207,12 @@ class IPPAddonActivator {
       return false;
     }
 
+    // Do not show the same notification again for the same base domain.
+    const shown = await browser.ippActivator.getNotifiedDomains();
+    if (Array.isArray(shown) && shown.includes(baseDomain)) {
+      return false;
+    }
+
     const breakage = (breakages || []).find(
       (b) => Array.isArray(b.domains) && b.domains.includes(baseDomain),
     );
@@ -212,6 +227,9 @@ class IPPAddonActivator {
     }
 
     await browser.ippActivator.showMessage(breakage.message);
+
+    await browser.ippActivator.addNotifiedDomain(baseDomain);
+
     return true;
   }
 

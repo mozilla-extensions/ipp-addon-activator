@@ -107,10 +107,11 @@ Notes:
     Supported modifiers: `strong`.
 - `condition` (optional): a Condition object that controls when to show the notification. If omitted, the rule always matches when the domain matches.
 - Testing mode is detected via the pref `extensions.ippactivator.testMode` (set to true by tests and by `npm run start`).
-- Inject dynamic breakages at runtime via string prefs to JSON arrays:
-  - `extensions.ippactivator.dynamicTabBreakages` for tab-triggered breakages
-  - `extensions.ippactivator.dynamicWebRequestBreakages` for webRequest-triggered breakages
-    The background listens for changes and updates immediately.
+- Runtime prefs (all values are JSON strings):
+  - `extensions.ippactivator.dynamicTabBreakages`: array for tab-triggered breakages.
+  - `extensions.ippactivator.dynamicWebRequestBreakages`: array for webRequest-triggered breakages.
+  - `extensions.ippactivator.notifiedDomains`: array of base domains (eTLD+1) that were already notified; used to suppress repeat notifications for the same domain. Clearing or removing this pref resets suppression.
+    The background listens for dynamic breakage changes and updates immediately.
 
 Examples (from tests, via Selenium running in chrome context):
 
@@ -261,7 +262,12 @@ Composing conditions
   }
   ```
 
-Notes: the notification is informational only (no action buttons). Users can dismiss it; it will reappear when conditions are met.
+Notes: the notification is informational only (no action buttons). Once shown for a given base domain, it won’t be shown again for that domain unless suppression is reset (see below).
+
+### Reset suppression (tests/QA)
+
+- Clear the pref `extensions.ippactivator.notifiedDomains` (remove the user value) to reset per-domain suppression.
+- From tests using the browser helper, call `clearNotifiedDomains()` defined in `browser/head.js`.
 
 ## License
 

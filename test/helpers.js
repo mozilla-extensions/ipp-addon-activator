@@ -18,6 +18,7 @@ const DYNAMIC_TAB_BREAKAGES_PREF =
   "extensions.ippactivator.dynamicTabBreakages";
 const DYNAMIC_WEBREQUEST_BREAKAGES_PREF =
   "extensions.ippactivator.dynamicWebRequestBreakages";
+const NOTIFIED_DOMAINS_PREF = "extensions.ippactivator.notifiedDomains";
 
 async function buildXpiIfMissing() {
   const ADDON_XPI_PATH = path.join(
@@ -203,6 +204,22 @@ async function clearDynamicBreakages(driver) {
   );
 }
 
+async function clearNotifiedDomains(driver) {
+  await setChromeContext(driver);
+  return driver.executeScript((prefName) => {
+    try {
+      // eslint-disable-next-line no-undef
+      if (Services.prefs.prefHasUserValue(prefName)) {
+        // eslint-disable-next-line no-undef
+        Services.prefs.clearUserPref(prefName);
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }, NOTIFIED_DOMAINS_PREF);
+}
+
 export {
   buildXpiIfMissing,
   createDriver,
@@ -215,4 +232,5 @@ export {
   setDynamicTabBreakages,
   setDynamicWebRequestBreakages,
   clearDynamicBreakages,
+  clearNotifiedDomains,
 };

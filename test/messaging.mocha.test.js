@@ -13,6 +13,7 @@ import {
   waitNotificationGone,
   setDynamicTabBreakages,
   clearDynamicBreakages,
+  clearNotifiedDomains,
 } from "./helpers.js";
 
 describe("Notifications", function () {
@@ -25,6 +26,7 @@ describe("Notifications", function () {
     const xpiPath = await buildXpiIfMissing();
     driver = await createDriver();
     await driver.installAddon(xpiPath, true);
+    await clearNotifiedDomains(driver);
     // Inject dynamic breakage at runtime for example.com
     await setDynamicTabBreakages(driver, [
       {
@@ -57,7 +59,8 @@ describe("Notifications", function () {
 
     await waitNotificationGone(driver);
 
-    // Refresh; since the notification is informational, it should reappear
+    // Reset suppression and refresh; it should reappear
+    await clearNotifiedDomains(driver);
     await setContentContext(driver);
     await driver.navigate().refresh();
     const reappeared = await waitForNotification(driver, 15000);

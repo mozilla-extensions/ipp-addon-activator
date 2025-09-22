@@ -14,6 +14,7 @@ const PREF_DYNAMIC_TAB_BREAKAGES =
   "extensions.ippactivator.dynamicTabBreakages";
 const PREF_DYNAMIC_WEBREQUEST_BREAKAGES =
   "extensions.ippactivator.dynamicWebRequestBreakages";
+const PREF_NOTIFIED_DOMAINS = "extensions.ippactivator.notifiedDomains";
 
 this.ippActivator = class extends ExtensionAPI {
   onStartup() {}
@@ -72,6 +73,48 @@ this.ippActivator = class extends ExtensionAPI {
             return Array.isArray(arr) ? arr : [];
           } catch (_) {
             return [];
+          }
+        },
+        getNotifiedDomains() {
+          try {
+            const json = Services.prefs.getStringPref(
+              PREF_NOTIFIED_DOMAINS,
+              "[]",
+            );
+            const arr = JSON.parse(json);
+            return Array.isArray(arr) ? arr : [];
+          } catch (_) {
+            return [];
+          }
+        },
+        addNotifiedDomain(domain) {
+          try {
+            const d = String(domain || "");
+            if (!d) {
+              return;
+            }
+            let arr = [];
+            try {
+              const json = Services.prefs.getStringPref(
+                PREF_NOTIFIED_DOMAINS,
+                "[]",
+              );
+              arr = JSON.parse(json);
+              if (!Array.isArray(arr)) {
+                arr = [];
+              }
+            } catch (_) {
+              arr = [];
+            }
+            if (!arr.includes(d)) {
+              arr.push(d);
+              Services.prefs.setStringPref(
+                PREF_NOTIFIED_DOMAINS,
+                JSON.stringify(arr),
+              );
+            }
+          } catch (e) {
+            console.warn("Unable to store a notified domain", e);
           }
         },
         getBaseDomainFromURL(url) {

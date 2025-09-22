@@ -12,6 +12,7 @@ import {
   dismissNotification,
   setDynamicTabBreakages,
   clearDynamicBreakages,
+  clearNotifiedDomains,
 } from "./helpers.js";
 
 describe("Condition: cookie", function () {
@@ -53,6 +54,7 @@ describe("Condition: cookie", function () {
     driver = await createDriver();
     await driver.installAddon(xpiPath, true);
     await clearDynamicBreakages(driver);
+    await clearNotifiedDomains(driver);
   });
 
   after(async () => {
@@ -67,6 +69,7 @@ describe("Condition: cookie", function () {
   });
 
   it("does not show when cookie is missing; shows when present", async () => {
+    await clearNotifiedDomains(driver);
     await setDynamicTabBreakages(driver, [
       {
         domains: ["example.com"],
@@ -105,6 +108,7 @@ describe("Condition: cookie", function () {
   });
 
   it("matches exact value when value is specified", async () => {
+    await clearNotifiedDomains(driver);
     await clearCookie("ipp_value");
     await setDynamicTabBreakages(driver, [
       {
@@ -147,6 +151,7 @@ describe("Condition: cookie", function () {
   });
 
   it("matches substring when value_contain is specified", async () => {
+    await clearNotifiedDomains(driver);
     await clearCookie("ipp_contains");
     await setDynamicTabBreakages(driver, [
       {

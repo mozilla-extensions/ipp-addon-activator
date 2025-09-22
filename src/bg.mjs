@@ -21,6 +21,7 @@ class IPPAddonActivator {
   constructor() {
     this.tabUpdated = this.#tabUpdated.bind(this);
     this.tabActivated = this.#tabActivated.bind(this);
+    this.tabRemoved = this.#tabRemoved.bind(this);
     this.onRequest = this.#onRequest.bind(this);
 
     browser.ippActivator.isTesting().then(async (isTesting) => {
@@ -66,7 +67,11 @@ class IPPAddonActivator {
     // Track when a tab becomes active to show deferred notifications
     browser.tabs.onActivated.addListener(this.tabActivated);
 
-    // Re-evaluate conditions when relevant network activity happens
+    // Cleanup bookkeeping when tabs are closed
+    browser.tabs.onRemoved.addListener(this.tabRemoved);
+
+    // Evaluate conditions when relevant network activity happens for the
+    // monitored domains.
     browser.webRequest.onBeforeRequest.addListener(
       this.onRequest,
       { urls: ["<all_urls>"], types: ["media", "sub_frame", "xmlhttprequest"] },
@@ -83,6 +88,7 @@ class IPPAddonActivator {
 
     browser.tabs.onUpdated.removeListener(this.tabUpdated);
     browser.tabs.onActivated.removeListener(this.tabActivated);
+    browser.tabs.onRemoved.removeListener(this.tabRemoved);
     browser.webRequest.onBeforeRequest.removeListener(this.onRequest);
 
     this.#initialized = false;
@@ -244,7 +250,9 @@ class IPPAddonActivator {
 
     try {
       const tab = await browser.tabs.get(details.tabId);
-      if (!tab) return;
+      if (!tab) {
+        return;
+      }
 
       if (tab.active) {
         await this.#maybeNotify(tab, this.#webrequestBreakages, details.url);
@@ -258,6 +266,13 @@ class IPPAddonActivator {
       // tab may not exist
     }
   }
+
+  async #tabRemoved(tabId, _removeInfo) {
+    // Clean up any pending state associated with the closed tab
+    this.#pendingTabs.delete(tabId);
+    this.#pendingWebRequests.delete(tabId);
+  }
 }
 
+/* This object is kept alive by listeners */
 new IPPAddonActivator();

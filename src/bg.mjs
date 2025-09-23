@@ -59,24 +59,8 @@ class IPPAddonActivator {
       return;
     }
 
-    // React on URL changes and reloads (status: 'loading')
-    browser.tabs.onUpdated.addListener(this.tabUpdated, {
-      properties: ["url", "status"],
-    });
-
-    // Track when a tab becomes active to show deferred notifications
-    browser.tabs.onActivated.addListener(this.tabActivated);
-
-    // Cleanup bookkeeping when tabs are closed
-    browser.tabs.onRemoved.addListener(this.tabRemoved);
-
-    // Evaluate conditions when relevant network activity happens for the
-    // monitored domains.
-    browser.webRequest.onBeforeRequest.addListener(
-      this.onRequest,
-      { urls: ["<all_urls>"], types: ["media", "sub_frame", "xmlhttprequest"] },
-      [],
-    );
+    // Register only the listeners that are needed for existing breakages.
+    this.#registerListeners();
 
     this.#initialized = true;
   }
@@ -86,10 +70,7 @@ class IPPAddonActivator {
       return;
     }
 
-    browser.tabs.onUpdated.removeListener(this.tabUpdated);
-    browser.tabs.onActivated.removeListener(this.tabActivated);
-    browser.tabs.onRemoved.removeListener(this.tabRemoved);
-    browser.webRequest.onBeforeRequest.removeListener(this.onRequest);
+    this.#unregisterListeners();
 
     this.#initialized = false;
   }
@@ -138,6 +119,68 @@ class IPPAddonActivator {
       ...(this.#webrequestBaseBreakages || []),
       ...dynamicWr,
     ];
+
+    // Adjust listeners if we've already initialized.
+    if (this.#initialized) {
+      this.#registerListeners();
+    }
+  }
+
+  #registerListeners() {
+    this.#unregisterListeners();
+
+    const needTabUpdated =
+      Array.isArray(this.#tabBreakages) && this.#tabBreakages.length > 0;
+    const needWebRequest =
+      Array.isArray(this.#webrequestBreakages) &&
+      this.#webrequestBreakages.length > 0;
+    const needActivation = needTabUpdated || needWebRequest;
+
+    // tabs.onUpdated (only if there are tab breakages)
+    if (needTabUpdated) {
+      browser.tabs.onUpdated.addListener(this.tabUpdated, {
+        properties: ["url", "status"],
+      });
+    }
+
+    // webRequest.onBeforeRequest (only if there are webRequest breakages)
+    if (needWebRequest) {
+      browser.webRequest.onBeforeRequest.addListener(
+        this.onRequest,
+        {
+          urls: ["<all_urls>"],
+          types: ["media", "sub_frame", "xmlhttprequest"],
+        },
+        [],
+      );
+    }
+
+    // tabs.onActivated and tabs.onRemoved are needed when either above is needed
+    if (needActivation) {
+      browser.tabs.onActivated.addListener(this.tabActivated);
+      browser.tabs.onRemoved.addListener(this.tabRemoved);
+    }
+  }
+
+  #unregisterListeners() {
+    if (browser.tabs.onUpdated.hasListener(this.tabUpdated)) {
+      browser.tabs.onUpdated.removeListener(this.tabUpdated);
+    }
+
+    if (browser.tabs.onActivated.hasListener(this.tabActivated)) {
+      browser.tabs.onActivated.removeListener(this.tabActivated);
+    }
+
+    if (browser.tabs.onRemoved.hasListener(this.tabRemoved)) {
+      browser.tabs.onRemoved.removeListener(this.tabRemoved);
+    }
+
+    if (browser.webRequest.onBeforeRequest.hasListener(this.onRequest)) {
+      browser.webRequest.onBeforeRequest.removeListener(this.onRequest);
+    }
+
+    this.#pendingTabs.clear();
+    this.#pendingWebRequests.clear();
   }
 
   async #tabUpdated(tabId, changeInfo, tab) {

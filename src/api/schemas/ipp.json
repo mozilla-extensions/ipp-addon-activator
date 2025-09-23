@@ -103,16 +103,23 @@
       {
         "name": "getBaseDomainFromURL",
         "type": "function",
-        "description": "Return the eTLD+1 (registrable domain) for the given URL.",
+        "description": "Return both the eTLD+1 (baseDomain) and full host for the given URL.",
         "async": true,
         "parameters": [
           {
             "name": "url",
             "type": "string",
-            "description": "The URL whose base domain is requested."
+            "description": "The URL to analyze."
           }
         ],
-        "returns": { "type": "string" }
+        "returns": {
+          "type": "object",
+          "properties": {
+            "baseDomain": { "type": "string" },
+            "host": { "type": "string" }
+          },
+          "required": ["baseDomain", "host"]
+        }
       }
     ],
     "events": [

@@ -94,7 +94,9 @@ Each entry has the shape:
 
 Notes:
 
-- `domains`: list of registrable domains (eTLD+1, e.g. `example.com`) for which to show the notification. The match includes all subdomains.
+- `domains`: list of hostnames or registrable domains (eTLD+1).
+  - If an entry equals the page host (e.g. `api.example.com`), it matches only that host.
+  - If an entry equals the base domain (eTLD+1, e.g. `example.com`), it matches that domain and all its subdomains.
 - `message`: can be either a string or an array of parts to render rich content.
   - String example: `"Simple message"`.
   - Array example:

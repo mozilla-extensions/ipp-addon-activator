@@ -194,11 +194,11 @@ class IPPAddonActivator {
     if ("url" in changeInfo) {
       try {
         // If we had a notification for a different base domain, hide it
-        const newBase = await browser.ippActivator.getBaseDomainFromURL(
+        const info = await browser.ippActivator.getBaseDomainFromURL(
           changeInfo.url || tab?.url || "",
         );
         const shownBase = this.#shownDomainByTab.get(tabId);
-        if (shownBase && newBase && newBase !== shownBase) {
+        if (shownBase && shownBase !== info.baseDomain) {
           await browser.ippActivator.hideMessage(tabId);
           this.#shownDomainByTab.delete(tabId);
         }
@@ -265,19 +265,25 @@ class IPPAddonActivator {
   }
 
   async #maybeNotify(tab, breakages, url) {
-    const baseDomain = await browser.ippActivator.getBaseDomainFromURL(url);
-    if (!baseDomain) {
+    const info = await browser.ippActivator.getBaseDomainFromURL(url);
+    if (!info.baseDomain && !info.host) {
       return false;
     }
 
     // Do not show the same notification again for the same base domain.
     const shown = await browser.ippActivator.getNotifiedDomains();
-    if (Array.isArray(shown) && shown.includes(baseDomain)) {
+    if (
+      info.baseDomain &&
+      Array.isArray(shown) &&
+      shown.includes(info.baseDomain)
+    ) {
       return false;
     }
 
-    const breakage = (breakages || []).find(
-      (b) => Array.isArray(b.domains) && b.domains.includes(baseDomain),
+    const breakage = breakages.find(
+      (b) =>
+        Array.isArray(b.domains) &&
+        (b.domains.includes(info.baseDomain) || b.domains.includes(info.host)),
     );
     if (!breakage) {
       return false;
@@ -291,9 +297,9 @@ class IPPAddonActivator {
 
     await browser.ippActivator.showMessage(breakage.message, tab.id);
     // Track which base domain this tab is showing a notification for
-    this.#shownDomainByTab.set(tab.id, baseDomain);
+    this.#shownDomainByTab.set(tab.id, info.baseDomain);
 
-    await browser.ippActivator.addNotifiedDomain(baseDomain);
+    await browser.ippActivator.addNotifiedDomain(info.baseDomain);
 
     return true;
   }

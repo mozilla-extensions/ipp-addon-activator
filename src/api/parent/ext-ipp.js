@@ -143,18 +143,21 @@ this.ippActivator = class extends ExtensionAPI {
           try {
             const host = Services.io.newURI(url).host;
             if (!host) {
-              return "";
+              return { baseDomain: "", host: "" };
             }
+            let baseDomain = "";
             try {
-              return Services.eTLD.getBaseDomainFromHost(host);
+              baseDomain = Services.eTLD.getBaseDomainFromHost(host);
             } catch (e) {
               if (e.result === Cr.NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS) {
-                return host;
+                baseDomain = host;
+              } else {
+                baseDomain = "";
               }
-              return "";
             }
+            return { baseDomain, host };
           } catch (_) {
-            return "";
+            return { baseDomain: "", host: "" };
           }
         },
         async showMessage(message, tabId) {

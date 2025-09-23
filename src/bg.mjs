@@ -17,6 +17,7 @@ class IPPAddonActivator {
 
   #pendingTabs = new Set(); // pending due to tab URL change while inactive
   #pendingWebRequests = new Map(); // tabId -> Set of pending request URLs
+  #shownDomainByTab = new Map(); // tabId -> baseDomain of currently shown notification
 
   constructor() {
     this.tabUpdated = this.#tabUpdated.bind(this);
@@ -191,6 +192,19 @@ class IPPAddonActivator {
 
     // If the tab URL changed, reset any pending web requests for this tab
     if ("url" in changeInfo) {
+      try {
+        // If we had a notification for a different base domain, hide it
+        const newBase = await browser.ippActivator.getBaseDomainFromURL(
+          changeInfo.url || tab?.url || "",
+        );
+        const shownBase = this.#shownDomainByTab.get(tabId);
+        if (shownBase && newBase && newBase !== shownBase) {
+          await browser.ippActivator.hideMessage(tabId);
+          this.#shownDomainByTab.delete(tabId);
+        }
+      } catch (_) {
+        // ignore lookup issues
+      }
       this.#pendingWebRequests.delete(tabId);
     }
 
@@ -276,6 +290,8 @@ class IPPAddonActivator {
     }
 
     await browser.ippActivator.showMessage(breakage.message, tab.id);
+    // Track which base domain this tab is showing a notification for
+    this.#shownDomainByTab.set(tab.id, baseDomain);
 
     await browser.ippActivator.addNotifiedDomain(baseDomain);
 
@@ -314,6 +330,7 @@ class IPPAddonActivator {
     // Clean up any pending state associated with the closed tab
     this.#pendingTabs.delete(tabId);
     this.#pendingWebRequests.delete(tabId);
+    this.#shownDomainByTab.delete(tabId);
   }
 }
 

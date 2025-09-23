@@ -53,6 +53,27 @@ this.ippActivator = class extends ExtensionAPI {
             false,
           );
         },
+        hideMessage(tabId) {
+          try {
+            const tab = tabId
+              ? lazy.tabTracker.getTab(tabId)
+              : lazy.tabTracker.activeTab;
+            const browser = tab?.linkedBrowser;
+            const win = browser?.ownerGlobal;
+            if (!browser || !win || !win.gBrowser) {
+              return;
+            }
+
+            const nbox = win.gBrowser.getNotificationBox(browser);
+            const id = "ipp-activator-notification";
+            const existing = nbox.getNotificationWithValue?.(id);
+            if (existing) {
+              nbox.removeNotification(existing);
+            }
+          } catch (e) {
+            console.warn("Unable to hide the message", e);
+          }
+        },
         isIPPActive() {
           return lazy.IPProtectionService.isActive;
         },
@@ -93,33 +114,29 @@ this.ippActivator = class extends ExtensionAPI {
           }
         },
         addNotifiedDomain(domain) {
+          const d = String(domain || "");
+          if (!d) {
+            return;
+          }
+          let arr = [];
           try {
-            const d = String(domain || "");
-            if (!d) {
-              return;
-            }
-            let arr = [];
-            try {
-              const json = Services.prefs.getStringPref(
-                PREF_NOTIFIED_DOMAINS,
-                "[]",
-              );
-              arr = JSON.parse(json);
-              if (!Array.isArray(arr)) {
-                arr = [];
-              }
-            } catch (_) {
+            const json = Services.prefs.getStringPref(
+              PREF_NOTIFIED_DOMAINS,
+              "[]",
+            );
+            arr = JSON.parse(json);
+            if (!Array.isArray(arr)) {
               arr = [];
             }
-            if (!arr.includes(d)) {
-              arr.push(d);
-              Services.prefs.setStringPref(
-                PREF_NOTIFIED_DOMAINS,
-                JSON.stringify(arr),
-              );
-            }
-          } catch (e) {
-            console.warn("Unable to store a notified domain", e);
+          } catch (_) {
+            arr = [];
+          }
+          if (!arr.includes(d)) {
+            arr.push(d);
+            Services.prefs.setStringPref(
+              PREF_NOTIFIED_DOMAINS,
+              JSON.stringify(arr),
+            );
           }
         },
         getBaseDomainFromURL(url) {
@@ -140,7 +157,7 @@ this.ippActivator = class extends ExtensionAPI {
             return "";
           }
         },
-        showMessage(message, tabId) {
+        async showMessage(message, tabId) {
           try {
             // Choose the target tab (by id if provided, else active tab)
             const tab = tabId
@@ -184,7 +201,7 @@ this.ippActivator = class extends ExtensionAPI {
 
             const label = buildLabel(message);
 
-            nbox.appendNotification(
+            const notification = await nbox.appendNotification(
               id,
               {
                 // If label is a string, pass it through; if it's a Node, the
@@ -194,6 +211,10 @@ this.ippActivator = class extends ExtensionAPI {
               },
               [],
             );
+
+            // Persist the notification until the user removes so it
+            // doesn't get removed on redirects.
+            notification.persistence = -1;
           } catch (e) {
             console.warn("Unable to show the message", e);
           }

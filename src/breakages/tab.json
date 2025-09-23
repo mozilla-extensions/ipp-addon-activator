@@ -11,10 +11,24 @@
       }
     ],
     "condition": {
-      "type": "or",
+      "type": "and",
       "conditions": [
-        { "type": "cookie", "domain": "accounts.google.com", "name": "SID" },
-        { "type": "cookie", "domain": "youtube.com", "name": "SID" }
+        {
+          "type": "not",
+          "condition": {
+            "type": "cookie",
+            "domain": "accounts.google.com",
+            "name": "SID"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "cookie",
+            "domain": "youtube.com",
+            "name": "SID"
+          }
+        }
       ]
     }
   },
@@ -30,9 +44,12 @@
       }
     ],
     "condition": {
-      "type": "cookie",
-      "domain": ".reddit.com",
-      "name": "reddit_session"
+      "type": "not",
+      "condition": {
+        "type": "cookie",
+        "domain": ".reddit.com",
+        "name": "reddit_session"
+      }
     }
   },
   {
@@ -47,7 +64,7 @@
         "text": "The website may not work with a VPN.",
         "modifier": ["strong"]
       },
-      { "text": " Try sturning VPN off while you use this website." }
+      { "text": " Try turning VPN off while you use this website." }
     ]
   }
 ]

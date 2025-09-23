@@ -40,6 +40,20 @@
         ]
       },
       {
+        "name": "hideMessage",
+        "type": "function",
+        "description": "Hide the IPP notification for the given tab (or active tab by default). No-op if not present.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer",
+            "optional": true,
+            "description": "Target tab id. Defaults to active tab."
+          }
+        ]
+      },
+      {
         "name": "getNotifiedDomains",
         "type": "function",
         "description": "Return the list of base domains for which a notification was already shown.",

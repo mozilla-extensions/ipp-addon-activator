@@ -275,7 +275,7 @@ class IPPAddonActivator {
       return false;
     }
 
-    await browser.ippActivator.showMessage(breakage.message);
+    await browser.ippActivator.showMessage(breakage.message, tab.id);
 
     await browser.ippActivator.addNotifiedDomain(baseDomain);
 

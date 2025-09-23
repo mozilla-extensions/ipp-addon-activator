@@ -6,8 +6,13 @@
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
+  ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
   IPProtectionService:
     "resource:///modules/ipprotection/IPProtectionService.sys.mjs",
+});
+
+ChromeUtils.defineLazyGetter(lazy, "tabTracker", () => {
+  return lazy.ExtensionParent.apiManager.global.tabTracker;
 });
 
 const PREF_DYNAMIC_TAB_BREAKAGES =
@@ -135,14 +140,19 @@ this.ippActivator = class extends ExtensionAPI {
             return "";
           }
         },
-        showMessage(message) {
+        showMessage(message, tabId) {
           try {
-            const win = Services.wm.getMostRecentWindow("navigator:browser");
-            if (!win || !win.gBrowser) {
+            // Choose the target tab (by id if provided, else active tab)
+            const tab = tabId
+              ? lazy.tabTracker.getTab(tabId)
+              : lazy.tabTracker.activeTab;
+            const browser = tab?.linkedBrowser;
+            const win = browser?.ownerGlobal;
+            if (!browser || !win || !win.gBrowser) {
               return;
             }
 
-            const nbox = win.gBrowser.getNotificationBox();
+            const nbox = win.gBrowser.getNotificationBox(browser);
             const id = "ipp-activator-notification";
 
             const existing = nbox.getNotificationWithValue?.(id);

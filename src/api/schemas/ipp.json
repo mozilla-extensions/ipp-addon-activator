@@ -6,7 +6,7 @@
       {
         "name": "showMessage",
         "type": "function",
-        "description": "Show a message using the browser notification box. Accepts a string or an array of parts to render (with optional strong modifier).",
+        "description": "Show a message using the browser notification box. Accepts a string or an array of parts to render (with optional strong modifier). Optionally target a specific tab by id.",
         "async": true,
         "parameters": [
           {
@@ -30,6 +30,12 @@
                 }
               }
             ]
+          },
+          {
+            "name": "tabId",
+            "type": "integer",
+            "optional": true,
+            "description": "Target tab id. Defaults to active tab."
           }
         ]
       },

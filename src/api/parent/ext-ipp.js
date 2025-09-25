@@ -226,38 +226,47 @@ this.ippActivator = class extends ExtensionAPI {
           context,
           name: "ippActivator.onDynamicTabBreakagesUpdated",
           register: (fire) => {
-            const branch = Services.prefs.getBranch("extensions.ippactivator.");
             const observer = {
               observe(subject, topic, data) {
                 if (
                   topic === "nsPref:changed" &&
-                  data === "dynamicTabBreakages"
+                  data === PREF_DYNAMIC_TAB_BREAKAGES
                 ) {
                   fire.async({});
                 }
               },
             };
-            branch.addObserver("", observer);
-            return () => branch.removeObserver("", observer);
+            Services.prefs.addObserver(PREF_DYNAMIC_TAB_BREAKAGES, observer);
+            return () =>
+              Services.prefs.removeObserver(
+                PREF_DYNAMIC_TAB_BREAKAGES,
+                observer,
+              );
           },
         }).api(),
         onDynamicWebRequestBreakagesUpdated: new ExtensionCommon.EventManager({
           context,
           name: "ippActivator.onDynamicWebRequestBreakagesUpdated",
           register: (fire) => {
-            const branch = Services.prefs.getBranch("extensions.ippactivator.");
             const observer = {
               observe(subject, topic, data) {
                 if (
                   topic === "nsPref:changed" &&
-                  data === "dynamicWebRequestBreakages"
+                  data === PREF_DYNAMIC_WEBREQUEST_BREAKAGES
                 ) {
                   fire.async({});
                 }
               },
             };
-            branch.addObserver("", observer);
-            return () => branch.removeObserver("", observer);
+            Services.prefs.addObserver(
+              PREF_DYNAMIC_WEBREQUEST_BREAKAGES,
+              observer,
+            );
+            return () =>
+              Services.prefs.removeObserver(
+                PREF_DYNAMIC_WEBREQUEST_BREAKAGES,
+                observer,
+              );
           },
         }).api(),
       },

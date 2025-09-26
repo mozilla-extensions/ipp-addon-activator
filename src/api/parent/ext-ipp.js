@@ -33,17 +33,23 @@ this.ippActivator = class extends ExtensionAPI {
           context,
           name: "ippActivator.onIPPActivated",
           register: (fire) => {
-            const topic = "IPProtectionService:Started";
-            const observer = {
-              observe(subject, t, _data) {
-                if (t === topic) {
-                  fire.async({});
-                }
-              },
+            const topics = [
+              "IPProtectionService:Started",
+              "IPProtectionService:Stopped",
+              "IPProtectionService:SignedOut",
+            ];
+            const observer = (_event) => {
+              fire.async();
             };
-            Services.obs.addObserver(observer, topic);
+
+            topics.forEach((topic) =>
+              lazy.IPProtectionService.addEventListener(topic, observer),
+            );
+
             return () => {
-              Services.obs.removeObserver(observer, topic);
+              topics.forEach((topic) =>
+                lazy.IPProtectionService.removeEventListener(topic, observer),
+              );
             };
           },
         }).api(),

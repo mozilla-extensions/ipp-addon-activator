@@ -79,7 +79,9 @@ describe("Host vs baseDomain matching", function () {
     } catch (_) {
       appearedOnSibling = false;
     }
-    expect(appearedOnSibling).to.equal(false, "should not match other subdomains");
+    expect(appearedOnSibling).to.equal(
+      false,
+      "should not match other subdomains",
+    );
   });
 });
-

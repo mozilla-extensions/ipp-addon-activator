@@ -32,23 +32,24 @@ this.ippActivator = class extends ExtensionAPI {
         onIPPActivated: new ExtensionCommon.EventManager({
           context,
           name: "ippActivator.onIPPActivated",
-          register: (fire) => {
+          register: fire => {
             const topics = [
+              "IPProtectionService:StateChanged",
               "IPProtectionService:Started",
               "IPProtectionService:Stopped",
               "IPProtectionService:SignedOut",
             ];
-            const observer = (_event) => {
+            const observer = _event => {
               fire.async();
             };
 
-            topics.forEach((topic) =>
-              lazy.IPProtectionService.addEventListener(topic, observer),
+            topics.forEach(topic =>
+              lazy.IPProtectionService.addEventListener(topic, observer)
             );
 
             return () => {
-              topics.forEach((topic) =>
-                lazy.IPProtectionService.removeEventListener(topic, observer),
+              topics.forEach(topic =>
+                lazy.IPProtectionService.removeEventListener(topic, observer)
               );
             };
           },
@@ -56,7 +57,7 @@ this.ippActivator = class extends ExtensionAPI {
         isTesting() {
           return Services.prefs.getBoolPref(
             "extensions.ippactivator.testMode",
-            false,
+            false
           );
         },
         hideMessage(tabId) {
@@ -81,13 +82,17 @@ this.ippActivator = class extends ExtensionAPI {
           }
         },
         isIPPActive() {
-          return lazy.IPProtectionService.isActive;
+          if ("state" in lazy.IPProtectionService) {
+            return lazy.IPProtectionService.state === "active";
+          }
+
+          return !!lazy.IPProtectionService.isActive;
         },
         getDynamicTabBreakages() {
           try {
             const json = Services.prefs.getStringPref(
               PREF_DYNAMIC_TAB_BREAKAGES,
-              "[]",
+              "[]"
             );
             const arr = JSON.parse(json);
             return Array.isArray(arr) ? arr : [];
@@ -99,7 +104,7 @@ this.ippActivator = class extends ExtensionAPI {
           try {
             const json = Services.prefs.getStringPref(
               PREF_DYNAMIC_WEBREQUEST_BREAKAGES,
-              "[]",
+              "[]"
             );
             const arr = JSON.parse(json);
             return Array.isArray(arr) ? arr : [];
@@ -111,7 +116,7 @@ this.ippActivator = class extends ExtensionAPI {
           try {
             const json = Services.prefs.getStringPref(
               PREF_NOTIFIED_DOMAINS,
-              "[]",
+              "[]"
             );
             const arr = JSON.parse(json);
             return Array.isArray(arr) ? arr : [];
@@ -128,7 +133,7 @@ this.ippActivator = class extends ExtensionAPI {
           try {
             const json = Services.prefs.getStringPref(
               PREF_NOTIFIED_DOMAINS,
-              "[]",
+              "[]"
             );
             arr = JSON.parse(json);
             if (!Array.isArray(arr)) {
@@ -141,7 +146,7 @@ this.ippActivator = class extends ExtensionAPI {
             arr.push(d);
             Services.prefs.setStringPref(
               PREF_NOTIFIED_DOMAINS,
-              JSON.stringify(arr),
+              JSON.stringify(arr)
             );
           }
         },
@@ -186,7 +191,7 @@ this.ippActivator = class extends ExtensionAPI {
               nbox.removeNotification(existing);
             }
 
-            const buildLabel = (msg) => {
+            const buildLabel = msg => {
               // Accept either string or array of parts {text, modifier}
               if (Array.isArray(msg)) {
                 const frag = win.document.createDocumentFragment();
@@ -218,7 +223,7 @@ this.ippActivator = class extends ExtensionAPI {
                 label,
                 priority: nbox.PRIORITY_WARNING_HIGH,
               },
-              [],
+              []
             );
 
             // Persist the notification until the user removes so it
@@ -231,14 +236,14 @@ this.ippActivator = class extends ExtensionAPI {
         onDynamicTabBreakagesUpdated: new ExtensionCommon.EventManager({
           context,
           name: "ippActivator.onDynamicTabBreakagesUpdated",
-          register: (fire) => {
+          register: fire => {
             const observer = {
               observe(subject, topic, data) {
                 if (
                   topic === "nsPref:changed" &&
                   data === PREF_DYNAMIC_TAB_BREAKAGES
                 ) {
-                  fire.async({});
+                  fire.async();
                 }
               },
             };
@@ -246,32 +251,32 @@ this.ippActivator = class extends ExtensionAPI {
             return () =>
               Services.prefs.removeObserver(
                 PREF_DYNAMIC_TAB_BREAKAGES,
-                observer,
+                observer
               );
           },
         }).api(),
         onDynamicWebRequestBreakagesUpdated: new ExtensionCommon.EventManager({
           context,
           name: "ippActivator.onDynamicWebRequestBreakagesUpdated",
-          register: (fire) => {
+          register: fire => {
             const observer = {
               observe(subject, topic, data) {
                 if (
                   topic === "nsPref:changed" &&
                   data === PREF_DYNAMIC_WEBREQUEST_BREAKAGES
                 ) {
-                  fire.async({});
+                  fire.async();
                 }
               },
             };
             Services.prefs.addObserver(
               PREF_DYNAMIC_WEBREQUEST_BREAKAGES,
-              observer,
+              observer
             );
             return () =>
               Services.prefs.removeObserver(
                 PREF_DYNAMIC_WEBREQUEST_BREAKAGES,
-                observer,
+                observer
               );
           },
         }).api(),

@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* global browser */
+/* global browser, ConditionFactory */
 
-import { ConditionFactory } from "./conditions/factory.mjs";
-
+/**
+ * The main class for the IPP activator add-on.
+ */
 class IPPAddonActivator {
   #initialized = false;
 
@@ -25,13 +26,13 @@ class IPPAddonActivator {
     this.tabRemoved = this.#tabRemoved.bind(this);
     this.onRequest = this.#onRequest.bind(this);
 
-    browser.ippActivator.isTesting().then(async (isTesting) => {
+    browser.ippActivator.isTesting().then(async isTesting => {
       await this.#loadAndRebuildBreakages();
       browser.ippActivator.onDynamicTabBreakagesUpdated.addListener(() =>
-        this.#loadAndRebuildBreakages(),
+        this.#loadAndRebuildBreakages()
       );
       browser.ippActivator.onDynamicWebRequestBreakagesUpdated.addListener(() =>
-        this.#loadAndRebuildBreakages(),
+        this.#loadAndRebuildBreakages()
       );
 
       if (isTesting) {
@@ -75,7 +76,7 @@ class IPPAddonActivator {
 
     const ids = Array.from(this.#shownDomainByTab.keys());
     await Promise.allSettled(
-      ids.map((id) => browser.ippActivator.hideMessage(id)),
+      ids.map(id => browser.ippActivator.hideMessage(id))
     );
 
     this.#shownDomainByTab.clear();
@@ -138,10 +139,10 @@ class IPPAddonActivator {
     this.#unregisterListeners();
 
     const needTabUpdated =
-      Array.isArray(this.#tabBreakages) && this.#tabBreakages.length > 0;
+      Array.isArray(this.#tabBreakages) && !!this.#tabBreakages.length;
     const needWebRequest =
       Array.isArray(this.#webrequestBreakages) &&
-      this.#webrequestBreakages.length > 0;
+      !!this.#webrequestBreakages.length;
     const needActivation = needTabUpdated || needWebRequest;
 
     // tabs.onUpdated (only if there are tab breakages)
@@ -159,7 +160,7 @@ class IPPAddonActivator {
           urls: ["<all_urls>"],
           types: ["media", "sub_frame", "xmlhttprequest"],
         },
-        [],
+        []
       );
     }
 
@@ -202,7 +203,7 @@ class IPPAddonActivator {
       try {
         // If we had a notification for a different base domain, hide it
         const info = await browser.ippActivator.getBaseDomainFromURL(
-          changeInfo.url || tab?.url || "",
+          changeInfo.url || tab?.url || ""
         );
         const shownBase = this.#shownDomainByTab.get(tabId);
         if (shownBase && shownBase !== info.baseDomain) {
@@ -288,9 +289,9 @@ class IPPAddonActivator {
     }
 
     const breakage = breakages.find(
-      (b) =>
+      b =>
         Array.isArray(b.domains) &&
-        (b.domains.includes(info.baseDomain) || b.domains.includes(info.host)),
+        (b.domains.includes(info.baseDomain) || b.domains.includes(info.host))
     );
     if (!breakage) {
       return false;

@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* global browser */
+/* global browser, ConditionBase */
 
-import ConditionBase from "./base.mjs";
-
+/**
+ * COOKIE condition
+ */
 class ConditionCookie extends ConditionBase {
   static STORAGE_KEY = "cookies-";
 
@@ -41,9 +42,9 @@ class ConditionCookie extends ConditionBase {
 
     const cookies =
       this.factory.retrieveData(
-        ConditionCookie.STORAGE_KEY + this.desc.domain,
+        ConditionCookie.STORAGE_KEY + this.desc.domain
       ) || [];
-    const cookie = cookies.find((c) => c && c.name === this.desc.name);
+    const cookie = cookies.find(c => c && c.name === this.desc.name);
     if (!cookie) {
       return false;
     }
@@ -67,4 +68,4 @@ class ConditionCookie extends ConditionBase {
   }
 }
 
-export default ConditionCookie;
+globalThis.ConditionCookie = ConditionCookie;
